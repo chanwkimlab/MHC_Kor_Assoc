@@ -30,6 +30,15 @@ include cohort in associationt only if case in cohort>0 (questionnaire exists)
 ### Automatic cohort merge manual syntax analyzer
 other github repo
 
+Rules
+```
+Case filtering base. do not include
+if merge pheno only exist in a cohort, include them.
+exclude medication
+include treatment  (more explicit??)
+hierachy qudstion do not test under if upper is +
+```
+
 ## Association test
 
 ### logistic regression
