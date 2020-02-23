@@ -2,9 +2,11 @@ import subprocess
 
 from path_configure import *
 
-def run_subprocess(command,quiet=False):
+def run_subprocess(command,quiet=False,dry=False):
     print("------{}-----".format("RUN"))
     print(command)
+    if dry:
+        return
     process = subprocess.Popen(command.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
     if quiet==False:
@@ -13,7 +15,6 @@ def run_subprocess(command,quiet=False):
         print("------{}-----".format("OUTPUT"))
         print(stdout.decode())
     return stdout,stderr
-
 
 
 def replace_characters(str_input,character_dict,catch_exception=True):
