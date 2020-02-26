@@ -30,10 +30,11 @@
 # (7) covar-name (2018. 11. 2.)
 # (8) rare threshold
 # (9) conditional variables.
-#install.packages("lmtest",
+install.packages("lmtest")
 if (!require("data.table")) install.packages("data.table")
 if (!require("tools")) install.packages("tools")
 if (!require("lmtest")) install.packages("lmtest")
+
 
 
 args <- commandArgs(TRUE)
@@ -53,6 +54,8 @@ data.covar.name = args[7] #
 condvar=args[8] ## comma separated, without spaces. 
 # If no conditioning, provide "NA"
 # Put "_All" for all search results: "AA_DRB1_All,AA_DQA1_All,AA_DQB1_All"  
+
+
 
 
 #print(args)
@@ -92,7 +95,7 @@ fam=rep(fam, each=2) ## make x2 for haploids
 
 # (2) covar
 print('---------------------------------Covariate load----------------------------------------------')
-covarexp=""
+
 if (file.exists(covfile)) {
   
     # covar <- as.matrix(read.table(covfile, header=T))[,-(1:2)]
@@ -128,7 +131,8 @@ if (file.exists(covfile)) {
     is.live.covar=(apply(is.na(covar), 1, sum)==0)
 
 } else {
-    print('covariate does not exist')    
+    print('covariate does not exist')
+    covarexp=""
     covar=NA
     is.live.covar=rep(TRUE, 2*n.fam)
 }
@@ -158,7 +162,27 @@ print(paste('individuals without missing phenotypes:',sum(is.live.phen)/2))
 
 # (4) phased
 print('-------------------------------------AA load---------------------------------------------')
+#phased.in <- as.matrix(read.table(phasedfile))
 
+#if(file_ext(phasedfile)=='aa'){
+#    phased_read=fread(phasedfile,header=FALSE) # faster version
+#    #save(phased_read,file=paste0(phasedfile,'.RData'))
+#    print(paste0("Generated", phasedfile,'.RData', 'Use this file as .aa file parameter to shorten loading time.'))
+#}else if(file_ext(phasedfile)=='Rdata'){
+#    phased_read=load(file=paste0(phasedfile,'.RData'))
+#}else{
+#    stop("unsupported aa file")
+#}
+#if(!file.exists(paste0(phasedfile,'.RData'))){
+#    phased_read=fread(phasedfile,header=FALSE) # faster version
+#    print(paste("Generating", phasedfile,'.RData', 'Use this file as .aa file parameter to shorten loading time.'))
+#    save(phased_read,file=paste0(phasedfile,'.RData'))
+#    print(paste("Generated"))
+#}else{
+#    print(paste("Loading", phasedfile,'.RData','instead of',phasedfile,'to reduce loading time.'))
+#    phased_read=load(file=paste0(phasedfile,'.RData')) 
+#    print('Loaded')
+#}
 phased_read=fread(phasedfile,header=FALSE) # faster version
 #phased_read=read.table(phasedfile)
 phased.in <- as.matrix(phased_read)
@@ -214,8 +238,19 @@ print(t(as.matrix(testvariants)))
 print(paste('# of testvariants:',length(testvariants)))
 print(paste("association mode",assoc_mode))
 print('------------------------------Iteration for each variant starts------------------------------')
+#
 for (i in 1:length(testvariants)) {
-
+    
+    if (i!=2){
+        next
+        
+    }    
+    
+#for (i in 210:210) {
+	#  if (i%%10 == 0) {
+	#	  cat("progress:",100*i/length(testvariants),'%','\n')
+  	#}
+	#variant <- as.character(testvariants[i])
     variant=testvariants[i]
   	vcol <- which(variants==variant)
   	newaa <-phased[,vcol]
@@ -246,22 +281,21 @@ for (i in 1:length(testvariants)) {
     newaa.f=newaa[is.live]
     # covar.f=as.matrix(covar[is.live,])  # as.matrix() is introduced in case only one covariate name is given(To prevent automatically converting to vector not matrix.)
     
-    
-    if(!is.na(covar)){
-      covar.f=as.matrix(covar[is.live,])
+    if(covarexp!=''){
+    print("covar.f was generated")
+    covar.f=as.matrix(covar[is.live,])
     }
 
     ## DEFINE NEW HAPLOTYPES
   	residues <- unique(newaa.f)
   	#hap.new.f = apply(cbind(hap.cond.f,newaa.f),1,paste0,collapse='',sep='')
   	hap.new.f = apply(cbind(newaa.f),1,paste0,collapse='',sep='')
-
+    save.image(file='yoursession2.RData')
   	#ALTERNATIVE MODEL
   	if (length(unique(residues)) == 1) {
     		results[i,] <- c(variant,"NaN","NaN","NaN","NaN",paste0(residues,collapse=','))
   	}
   	if (length(unique(residues)) > 1) {
-
         
         if (assoc_mode=="logistic"){
             nullexp <- paste0("glm(pheno.f ~ 1", covarexp, condexp, ", family=binomial(logit))")
@@ -272,27 +306,25 @@ for (i in 1:length(testvariants)) {
 
         }else{
             stop("invalid assoc_mode(use logistic or linear instead). check assoc_mode parameter")
-        }        
-        glm.null <- eval(parse(text=nullexp))
-        glm.alt <- eval(parse(text=altexp))        
+        }
         
-
+        glm.null <- eval(parse(text=nullexp))
+        glm.alt <- eval(parse(text=altexp))
+        
         lrtest_result=lrtest(glm.null,glm.alt)
+
+        
+        nulldeviance <- summary(glm.null)$deviance
+        nulldf <- summary(glm.null)$df[1]         
         
 		#STATISTICS
-    	chisq <- lrtest_result$Chisq[2]
+    	deviancediff <- lrtest_result$Df[2]
     	dfdiff <- lrtest_result$Df[2]
-        p_val <-lrtest_result$Pr[2]
+    	log10pvalue <- pchisq(deviancediff, df=dfdiff, lower.tail=FALSE, log.p=TRUE)/log(10)
 
-    	results[i,] <- c(variant, chisq, dfdiff, n.is.live, p_val, paste0(residues,collapse=','))
-        print(results[i,])
-        
+    	results[i,] <- c(variant, deviancediff, dfdiff, n.is.live, log10pvalue, paste0(residues,collapse=','))
   	}
+
 }
-
-results = as.data.frame(results)#save(results,file='result.RData')#outfilename = paste(outfile, paste0(condvar,collapse='+'), "omnibus", sep='.', collapse='.')
-outfilename = paste(outfile,"assoc", sep='.', collapse='.')
-write.table(results, outfilename, quote=F,sep='\t',row.names=F,col.names=c("Variant","chisq","deltaDF","N","P","Residues"))
-
 
 

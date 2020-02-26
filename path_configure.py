@@ -16,10 +16,14 @@ data_out_assoc_path=data_path+'out_assoc/'
 
 #########Files############
 
+
+PC_path=data_genotype_1000G+'KCHIP_130K_PCA2_annotated2_BHAN.txt'
+
 individual_common_path=data_path+'individual.tsv'
 
 final_aa_path=data_genotype_merge_path+'KCHIP_HLA.hg18.intersection_HAN.LABELED.NoSameAllele.bMarkers.2field.saveRareAllele.beagle5.1.AGM.bgl.phased.QC.aa'
 final_plink_path=data_genotype_merge_path+'KCHIP_HLA_SNP_1000G_merged'
+final_plink_aa_path=data_genotype_merge_path+'KCHIP_HLA_AA_SNP_1000G_merged'
 #################
 
 

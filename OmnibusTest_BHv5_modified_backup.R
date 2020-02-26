@@ -30,10 +30,9 @@
 # (7) covar-name (2018. 11. 2.)
 # (8) rare threshold
 # (9) conditional variables.
-#install.packages("lmtest",
-if (!require("data.table")) install.packages("data.table")
-if (!require("tools")) install.packages("tools")
-if (!require("lmtest")) install.packages("lmtest")
+require("data.table")
+require("tools")
+
 
 
 args <- commandArgs(TRUE)
@@ -53,6 +52,8 @@ data.covar.name = args[7] #
 condvar=args[8] ## comma separated, without spaces. 
 # If no conditioning, provide "NA"
 # Put "_All" for all search results: "AA_DRB1_All,AA_DQA1_All,AA_DQB1_All"  
+
+
 
 
 #print(args)
@@ -261,38 +262,49 @@ for (i in 1:length(testvariants)) {
     		results[i,] <- c(variant,"NaN","NaN","NaN","NaN",paste0(residues,collapse=','))
   	}
   	if (length(unique(residues)) > 1) {
-
         
         if (assoc_mode=="logistic"){
             nullexp <- paste0("glm(pheno.f ~ 1", covarexp, condexp, ", family=binomial(logit))")
-            altexp <- paste0("glm(pheno.f ~ 1", covarexp, condexp, "+ hap.new.f, family=binomial(logit),maxit=100)")
         }else if (assoc_mode=="linear"){
-            nullexp <- paste0("lm(pheno.f ~ 1", covarexp, condexp, ")")
-            altexp <- paste0("lm(pheno.f ~ 1", covarexp, condexp, "+ hap.new.f)")
-
+            nullexp <- paste0("glm(pheno.f ~ 1", covarexp, condexp, ", family=gaussian(identity))")
+            print(assoc_mode)
         }else{
             stop("invalid assoc_mode(use logistic or linear instead). check assoc_mode parameter")
-        }        
+        }
         glm.null <- eval(parse(text=nullexp))
-        glm.alt <- eval(parse(text=altexp))        
+        nulldeviance <- summary(glm.null)$deviance
+        nulldf <- summary(glm.null)$df[1]
         
+        if (assoc_mode=="logistic"){
+            altexp <- paste0("glm(pheno.f ~ 1", covarexp, condexp, "+ hap.new.f, family=binomial(logit),maxit=100)")
+        }else if (assoc_mode=="linear"){
+            altexp <- paste0("glm(pheno.f ~ 1", covarexp, condexp, "+ hap.new.f, family=gaussian(identity),maxit=100)")
+            print(assoc_mode)
+        }else{
+            stop("invalid assoc_mode(use logistic or linear instead). check assoc_mode parameter")
+        }
+    	glm.alt <- eval(parse(text=altexp))
+    	altdeviance <- summary(glm.alt)$deviance
+    	altdf <- summary(glm.alt)$df[1]
 
-        lrtest_result=lrtest(glm.null,glm.alt)
-        
+        #print(summary(glm.alt))
+        #print(sum(pheno.f==1 & hap.new.f=="Y"))
+        #print(sum(pheno.f==1 & hap.new.f=="V"))
+        #print(sum(pheno.f==0 & hap.new.f=="Y"))
+        #print(sum(pheno.f==0 & hap.new.f=="V"))
+
 		#STATISTICS
-    	chisq <- lrtest_result$Chisq[2]
-    	dfdiff <- lrtest_result$Df[2]
-        p_val <-lrtest_result$Pr[2]
+    	deviancediff <- nulldeviance - altdeviance
+    	dfdiff <- altdf - nulldf
+    	log10pvalue <- pchisq(deviancediff, df=dfdiff, lower.tail=FALSE, log.p=TRUE)/log(10)
 
-    	results[i,] <- c(variant, chisq, dfdiff, n.is.live, p_val, paste0(residues,collapse=','))
-        print(results[i,])
-        
+    	results[i,] <- c(variant, deviancediff, dfdiff, n.is.live, log10pvalue, paste0(residues,collapse=','))
   	}
 }
 
 results = as.data.frame(results)#save(results,file='result.RData')#outfilename = paste(outfile, paste0(condvar,collapse='+'), "omnibus", sep='.', collapse='.')
 outfilename = paste(outfile,"assoc", sep='.', collapse='.')
-write.table(results, outfilename, quote=F,sep='\t',row.names=F,col.names=c("Variant","chisq","deltaDF","N","P","Residues"))
+write.table(results, outfilename, quote=F,sep='\t',row.names=F,col.names=c("Variant","deltaDeviance","deltaDF","N","log10_P","Residues"))
 
 
 
