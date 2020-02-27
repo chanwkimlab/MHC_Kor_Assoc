@@ -35,7 +35,6 @@ if (!require("data.table")) install.packages("data.table")
 if (!require("tools")) install.packages("tools")
 if (!require("lmtest")) install.packages("lmtest")
 
-
 args <- commandArgs(TRUE)
 print('-----------------------------------Argument Information--------------------------------------------')
 print(paste('arguments','--out',args[2],'--fam',args[3],'--aa',args[4],'--phe',args[5],'--phename',args[6],'--covar',args[7],'--covarname',args[8],'--condvar',args[9]))

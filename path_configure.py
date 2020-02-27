@@ -24,6 +24,8 @@ individual_common_path=data_path+'individual.tsv'
 final_aa_path=data_genotype_merge_path+'KCHIP_HLA.hg18.intersection_HAN.LABELED.NoSameAllele.bMarkers.2field.saveRareAllele.beagle5.1.AGM.bgl.phased.QC.aa'
 final_plink_path=data_genotype_merge_path+'KCHIP_HLA_SNP_1000G_merged'
 final_plink_aa_path=data_genotype_merge_path+'KCHIP_HLA_AA_SNP_1000G_merged'
+final_plink_aa_grm_path=data_genotype_merge_path+'KCHIP_HLA_AA_SNP_1000G_merged.grm'
+
 #################
 
 
@@ -50,8 +52,8 @@ conversion_manual_path=data_path+'conversion_manual.tsv'
 
 conversion_manual_codebook_path=data_path+'conversion_manual_codebook.csv'
 
-pheno_file_path=data_out_pheno_path+'{}.pheno'
-pheno_all_file_path=data_out_pheno_path+'phenotypes_all.tsv'
-pheno_sumstatsjpg_file_path=data_out_pheno_path+'{}.jpg'
+#pheno_file_path=data_out_pheno_path+'{}.pheno'
+pheno_all_file_path=data_phenotype_path+'phenotypes_all.tsv'
+#pheno_sumstatsjpg_file_path=data_out_pheno_path+'{}.jpg'
 
 assoc_file_path=data_out_assoc_path+'{}'

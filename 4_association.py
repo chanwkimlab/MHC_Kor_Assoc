@@ -10,14 +10,31 @@
 # 
 # Rscript OmnibusTest_BHv5_modified.R logistic data/out_assoc/allergic_disease/step_02.omnibus data/genotype/4_merge/KCHIP_HLA_SNP_1000G_merged.fam data/out_assoc/allergic_disease/step_02.aa data/out_assoc/allergic_disease/phenotype.pheomnibus pheno data/out_assoc/allergic_disease/step_02.omnibus.covar header0 NA
 # 
-# for i in {00..20};do python 4_association.py $i;done 
+# 5*3=15
+# 
+# for i in {00..10};do python 4_association.py $i;done
+# for i in {11..20};do python 4_association.py $i;done
+# 
+# for i in {21..30};do python 4_association.py $i;done
+# for i in {31..40};do python 4_association.py $i;done
+# 
+# for i in {41..50};do python 4_association.py $i;done
+# for i in {51..60};do python 4_association.py $i;done
+# 
+# for i in {61..70};do python 4_association.py $i;done
+# for i in {71..80};do python 4_association.py $i;done
+# 
+# for i in {81..90};do python 4_association.py $i;done
+# for i in {91..101};do python 4_association.py $i;done
+# 
+# 
+# 
 # for i in {21..40};do python 4_association.py $i;done 
 # for i in {41..60};do python 4_association.py $i;done 
 # for i in {61..80};do python 4_association.py $i;done 
 # for i in {81..101};do python 4_association.py $i;done
 # 
 # Rscript OmnibusTest_BHv5_modified-Copy1.R linear data/out_assoc/age/step_01.omnibus data/genotype/4_merge/KCHIP_HLA_SNP_1000G_merged.fam data/out_assoc/age/step_01.aa data/out_assoc/age/phenotype.phe data/out_assoc/age/step_01.omnibus.covar header0,header1,header2,header3 NA
-# 
 # 
 # Rscript OmnibusTest_BHv5_modified-Copy1.R linear data/out_assoc/grip_strength/step_01.omnibus data/genotype/4_merge/KCHIP_HLA_SNP_1000G_merged.fam data/out_assoc/grip_strength/step_01.aa data/out_assoc/grip_strength/phenotype.phe data/out_assoc/grip_strength/step_01.omnibus.covar header0,header1,header2,header3 NA
 # 
@@ -137,7 +154,7 @@ assert (phenotypes.index!=fam['IID']).sum()==0
 
 
 binary_traits=phenotypes.columns[phenotypes.apply(lambda x: (not 'x_ray' in x.name) & (len(x.value_counts())<3),axis=0)]
-binary_traits
+binary_traits,len(binary_traits)
 
 
 # In[14]:
@@ -151,6 +168,7 @@ continuous_traits
 
 
 binary_continuous_traits=sorted(binary_traits.union(continuous_traits))
+binary_continuous_traits
 
 
 # # parse parameter
@@ -160,7 +178,7 @@ binary_continuous_traits=sorted(binary_traits.union(continuous_traits))
 
 if 'ipykernel' in sys.argv[0]:
     ipykernel=True
-    phenotype_name='stroke'
+    phenotype_name='diabetes'
     #phenotype_name='height'
     
 else:
@@ -316,12 +334,6 @@ if phenotype_type=='binary':
         log.info("phenotype defined\n"+str(pd.Series(phenotype_define).value_counts()))
 
 
-# In[ ]:
-
-
-
-
-
 # In[23]:
 
 
@@ -378,29 +390,13 @@ else:
 # 
 # Rscript OmnibusTest_BHv5.R logistic data/out_assoc/asthma/step_00.omnibus data/genotype/3_bmarkerphased/KCHIP_HLA.hg18.intersection_HAN.LABELED.NoSameAllele.bMarkers.2field.saveRareAllele_test.fam data/out_assoc/asthma/genotype_test.aa data/out_assoc/asthma/phenotype.pheomnibus pheno - - NA
 
+# In[ ]:
+
+
+
+
+
 # In[27]:
-
-
-def parse_plink_assoc(file_name):
-    with open(file_name,'r') as f:
-        lines=f.readlines()
-        #lines=[line.strip().split(' ') for line in lines]
-        header=re.split('\s+',lines[0].strip())
-        lines=[re.split('\s+',line.strip()) for line in lines[1:]]
-    ret=pd.DataFrame(lines,columns=header).replace('NA',np.nan)
-    if file_name.split('.')[-1]=='assoc':
-        return ret.astype({'BP':int,'A1':str,'A2':str,'F_A':float,'F_U':float,'P':float,'OR':float})
-    elif file_name.split('.')[-1]=='qassoc':
-        return ret.astype({'CHR':int,'SNP':str,'BP':int,'NMISS':int,'BETA':float,'SE':float,'R2':float,'T':float,'P':float})     
-    elif file_name.split('.')[-1]=='logistic':
-        return ret.astype({'CHR':int,'SNP':str,'BP':int,'A1':str,'NMISS':int,'OR':float,'STAT':float,'P':float})        
-    elif file_name.split('.')[-1]=='linear':
-        return ret.astype({'CHR':int,'SNP':str,'BP':int,'A1':str,'NMISS':int,'BETA':float,'STAT':float,'P':float})        
-    else:
-        raise
-
-
-# In[28]:
 
 
 gene_assign=bim_aa[['pos']]
@@ -413,23 +409,23 @@ for HLA_name in HLA_names:
 gene_assign    
 
 
-# In[29]:
+# In[28]:
 
 
 #SNPS_C_788_31347040_exon3
 
 
-# In[30]:
+# In[29]:
 
 
-marker_test='SNPS_C_788_31347040_exon3'#'6:30165273_C/T'
+marker_test='6:31180554_GAAC/G'#'6:30165273_C/T'
 #marker_test='SNPS_DPB1_10095_33161891_intron4'
 #marker_test='6:32520764_G/C'
 from pyplink import PyPlink
 pd.Series(PyPlink(plink_path).get_geno_marker(marker_test)).value_counts()
 
 
-# In[31]:
+# In[30]:
 
 
 pd.Series(phenotype_define[plink_aa.get_geno_marker(marker_test)==0]).hist(color='b',alpha=0.3)
@@ -437,13 +433,13 @@ pd.Series(phenotype_define[plink_aa.get_geno_marker(marker_test)==1]).hist(color
 pd.Series(phenotype_define[plink_aa.get_geno_marker(marker_test)==2]).hist(color='k',alpha=0.3)
 
 
-# In[34]:
+# In[31]:
 
 
 pd.Series(phenotype_define[plink_aa.get_geno_marker(marker_test)==0]).mean()
 
 
-# In[36]:
+# In[32]:
 
 
 pd.Series(phenotype_define[plink_aa.get_geno_marker(marker_test)==0]).hist()
@@ -451,7 +447,7 @@ plt.xlim(pd.Series(phenotype_define).min(),pd.Series(phenotype_define).max())
 print(pd.Series(phenotype_define[plink_aa.get_geno_marker(marker_test)==0]).mean())
 
 
-# In[37]:
+# In[33]:
 
 
 pd.Series(phenotype_define[plink_aa.get_geno_marker(marker_test)==1]).hist()
@@ -459,7 +455,7 @@ plt.xlim(pd.Series(phenotype_define).min(),pd.Series(phenotype_define).max())
 print(pd.Series(phenotype_define[plink_aa.get_geno_marker(marker_test)==1]).mean())
 
 
-# In[38]:
+# In[34]:
 
 
 pd.Series(phenotype_define[plink_aa.get_geno_marker(marker_test)==2]).hist()
@@ -467,19 +463,13 @@ plt.xlim(pd.Series(phenotype_define).min(),pd.Series(phenotype_define).max())
 print(pd.Series(phenotype_define[plink_aa.get_geno_marker(marker_test)==2]).mean())
 
 
-# In[127]:
+# In[35]:
 
 
-#'{}temp.aa'.format(data_out_assoc_phenotype_path)
+phenotypes['cohort'].unique()
 
 
-# In[123]:
-
-
-
-
-
-# In[ ]:
+# In[36]:
 
 
 conditional_variant_list=[] #save peak variants for each step
@@ -508,17 +498,23 @@ for idx in range(1,10+1):
     conditional_plink_phased_list=[]
     
     #Initialize covariate
-    covariate_plink=pd.DataFrame(index=phenotypes.index) 
-    covariate_omnibus=pd.DataFrame(index=phenotypes.index) 
-    """
+    #covariate_plink=pd.DataFrame(index=phenotypes.index) 
+    #covariate_omnibus=pd.DataFrame(index=phenotypes.index) 
+    
     covariate_plink=pd.read_csv(PC_path,sep='\t').set_index('ID').loc[fam['IID']]
     covariate_plink['age']=phenotypes['age']
     covariate_plink['sex']=phenotypes['sex']
+    covariate_plink['AS']=phenotypes['cohort'].replace(1,1).replace(2,0).replace(3,0)
+    covariate_plink['CT']=phenotypes['cohort'].replace(1,0).replace(2,1).replace(3,0)
+    #covariate_plink['NC']=phenotypes['cohort'].replace(1,0).replace(2,0).replace(3,1)
     
     covariate_omnibus=pd.read_csv(PC_path,sep='\t').set_index('ID').loc[fam['IID']]
     covariate_omnibus['age']=phenotypes['age']
     covariate_omnibus['sex']=phenotypes['sex']
-    """
+    covariate_omnibus['AS']=phenotypes['cohort'].replace(1,1).replace(2,0).replace(3,0)
+    covariate_omnibus['CT']=phenotypes['cohort'].replace(1,0).replace(2,1).replace(3,0)
+    #covariate_omnibus['NC']=phenotypes['cohort'].replace(1,0).replace(2,0).replace(3,1)    
+    
     log.info("##########################  STEP {}-1-1 conditional variant expansion (assign to a HLA gene)  ###################################".format(idx))
     log.info("conditional_variant_list:"+str(conditional_variant_list))
     conditional_variant_list_expand=[]
@@ -673,7 +669,7 @@ for idx in range(1,10+1):
     
     #Run plink association test
     log.info("#########################################  STEP {}-2 Plink Association  #########################################".format(idx))
-    command='plink --bfile {bfile} --assoc {assoc_mode} --pheno {pheno} {covar_on} {covar} --condition-list {condition_list} --out {out} '.format(bfile=plink_path,
+    command='plink2 --bfile {bfile} {assoc_mode} --pheno {pheno} {covar_on} {covar} --condition-list {condition_list} --out {out} --covar-variance-standardize --threads 20'.format(bfile=plink_path,
                                                                                                                         assoc_mode='--logistic' if phenotype_type=='binary' else '--linear',
                                                                                                                          pheno=data_out_assoc_phenotype_path+'phenotype.phe',
                                                                                                                          covar_on='--covar' if len(covariate_plink.columns[1:])!=0 else '',
@@ -707,16 +703,16 @@ for idx in range(1,10+1):
     log.info("#########################################  STEP {}-4 Result Save  #########################################".format(idx))
     
     #Data save
-    plink_assoc_result=parse_plink_assoc(data_out_assoc_phenotype_path+'step_{:02d}.plink.{}assoc'.format(idx,'' if phenotype_type=='binary' else 'q'))
-    plink_assoc_result.to_csv(data_out_assoc_phenotype_path+'step_{:02d}.plink.{}assoc.munged'.format(idx,'' if phenotype_type=='binary' else 'q'))
-    plink_assoc_result_sorted=plink_assoc_result.sort_values('P')    
-    plink_assoc_result_sorted.to_csv(data_out_assoc_phenotype_path+'step_{:02d}.plink.{}assoc.sorted_'.format(idx,'' if phenotype_type=='binary' else 'q'),sep='\t',index=None)    
+    #plink_assoc_result=parse_plink_assoc(data_out_assoc_phenotype_path+'step_{:02d}.plink.{}assoc'.format(idx,'' if phenotype_type=='binary' else 'q'))
+    #plink_assoc_result.to_csv(data_out_assoc_phenotype_path+'step_{:02d}.plink.{}assoc.munged'.format(idx,'' if phenotype_type=='binary' else 'q'))
+    #plink_assoc_result_sorted=plink_assoc_result.sort_values('P')    
+    #plink_assoc_result_sorted.to_csv(data_out_assoc_phenotype_path+'step_{:02d}.plink.{}assoc.sorted_'.format(idx,'' if phenotype_type=='binary' else 'q'),sep='\t',index=None)    
     
-    plink_assoc_result=parse_plink_assoc(data_out_assoc_phenotype_path+'step_{:02d}.plink.assoc.{}'.format(idx,'logistic' if phenotype_type=='binary' else 'linear'))
+    plink_assoc_result=pd.read_csv(data_out_assoc_phenotype_path+'step_{:02d}.plink.PHENO2.glm.{}'.format(idx,'logistic' if phenotype_type=='binary' else 'linear'),sep='\t')
     plink_assoc_result=plink_assoc_result[plink_assoc_result['TEST']=='ADD']
-    plink_assoc_result.to_csv(data_out_assoc_phenotype_path+'step_{:02d}.plink.assoc.{}.munged'.format(idx,'logistic' if phenotype_type=='binary' else 'linear'))
+    plink_assoc_result.to_csv(data_out_assoc_phenotype_path+'step_{:02d}.plink.PHENO2.glm.{}.munged'.format(idx,'logistic' if phenotype_type=='binary' else 'linear'),sep='\t',index=None)
     plink_assoc_result_sorted=plink_assoc_result.sort_values('P')    
-    plink_assoc_result_sorted.to_csv(data_out_assoc_phenotype_path+'step_{:02d}.plink.assoc.{}.sorted'.format(idx,'logistic' if phenotype_type=='binary' else 'linear'),sep='\t',index=None)
+    plink_assoc_result_sorted.to_csv(data_out_assoc_phenotype_path+'step_{:02d}.plink.PHENO2.glm.{}.sorted'.format(idx,'logistic' if phenotype_type=='binary' else 'linear'),sep='\t',index=None)
     
     omnibus_assoc_result=pd.read_csv(data_out_assoc_phenotype_path+'step_{:02d}.omnibus.assoc'.format(idx),sep='\t')
     omnibus_assoc_result.to_csv(data_out_assoc_phenotype_path+'step_{:02d}.omnibus.assoc.munged'.format(idx),sep='\t',index=None)
@@ -730,7 +726,7 @@ for idx in range(1,10+1):
     log.info(omnibus_assoc_result_sorted.head(5))
     
     if plink_assoc_result_sorted.iloc[0]['P'] < omnibus_assoc_result_sorted.iloc[0]['P']:
-        variant_name=plink_assoc_result_sorted.iloc[0]['SNP']
+        variant_name=plink_assoc_result_sorted.iloc[0]['ID']
         log.info('Plink win!!! {}'.format(variant_name))
         conditional_variant_list.append(("plink",variant_name))        
         if plink_assoc_result_sorted.iloc[0]['P']>5e-8:
