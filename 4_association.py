@@ -144,27 +144,39 @@ phenotypes=phenotypes.set_index('ID').loc[fam.IID]
 phenotypes.shape
 
 
-# In[12]:
+# In[14]:
 
 
 assert (phenotypes.index!=fam['IID']).sum()==0
 
 
-# In[13]:
+# In[35]:
+
+
+
+
+
+# In[15]:
 
 
 binary_traits=phenotypes.columns[phenotypes.apply(lambda x: (not 'x_ray' in x.name) & (len(x.value_counts())<3),axis=0)]
 binary_traits,len(binary_traits)
 
 
-# In[14]:
+# In[16]:
 
 
 continuous_traits=phenotypes.columns[phenotypes.apply(lambda x: (not 'x_ray' in x.name) & (len(x.value_counts())>=3),axis=0)]
 continuous_traits
 
 
-# In[15]:
+# In[55]:
+
+
+#binary_continuous_traits.index('ast')
+
+
+# In[17]:
 
 
 binary_continuous_traits=sorted(binary_traits.union(continuous_traits))
@@ -173,12 +185,12 @@ binary_continuous_traits
 
 # # parse parameter
 
-# In[16]:
+# In[18]:
 
 
 if 'ipykernel' in sys.argv[0]:
     ipykernel=True
-    phenotype_name='diabetes'
+    phenotype_name='child_dead'
     #phenotype_name='height'
     
 else:
@@ -194,14 +206,14 @@ elif phenotype_name in continuous_traits:
     phenotype_type='continuous'        
 
 
-# In[17]:
+# In[19]:
 
 
 data_out_assoc_phenotype_path=data_out_assoc_path+phenotype_name+'/'
 pathlib.Path(data_out_assoc_phenotype_path).mkdir(parents=True, exist_ok=True)
 
 
-# In[18]:
+# In[20]:
 
 
 log = logging.getLogger('logger')
@@ -220,13 +232,20 @@ log.addHandler(fileHandler)
 log.addHandler(streamHandler)
 
 
-# In[19]:
+# In[21]:
 
 
 log.info("phenotype_name: {}, phenotype_type:{}".format(phenotype_name,phenotype_type))
 
 
-# In[20]:
+# In[39]:
+
+
+phenotypes['child_dead'].unique(),phenotypes['child_present'].unique(),phenotypes['child_dead'].unique()
+(phenotypes['child_dead']>=1).sum()
+
+
+# In[22]:
 
 
 phenotype_define=np.full(len(phenotypes.index),np.nan)
@@ -272,7 +291,7 @@ elif phenotype_type=='continuous':
             log.info('cohort {} ignored. it may due to nonexistence of questionnaire'.format(cohort))
 
         log.info('Total values: {}'.format((~np.isnan(phenotype_define)).sum()))
-        
+    
     log.info("median:{:.3f}, mean: {:.3f}, std: {:.3f}, max: {:.3f}, min: {:.3f}".format(pd.Series(phenotype_define).median(),
                                                          pd.Series(phenotype_define).mean(),
                                                          pd.Series(phenotype_define).std(),
@@ -280,12 +299,13 @@ elif phenotype_type=='continuous':
                                                          pd.Series(phenotype_define).min()
                                                         )
          )
-    log.info(">mean+3std:{}, <mean-3std:{}".format((phenotype_define>pd.Series(phenotype_define).mean()+3*pd.Series(phenotype_define).std()).sum(),
-                                                (phenotype_define<pd.Series(phenotype_define).mean()-3*pd.Series(phenotype_define).std()).sum()
-                                               )
-         )
-    phenotype_define[phenotype_define>pd.Series(phenotype_define).mean()+3*pd.Series(phenotype_define).std()]=np.nan
-    phenotype_define[phenotype_define<pd.Series(phenotype_define).mean()-3*pd.Series(phenotype_define).std()]=np.nan
+    if phenotype_name!='child_dead':
+        log.info(">mean+3std:{}, <mean-3std:{}".format((phenotype_define>pd.Series(phenotype_define).mean()+3*pd.Series(phenotype_define).std()).sum(),
+                                                    (phenotype_define<pd.Series(phenotype_define).mean()-3*pd.Series(phenotype_define).std()).sum()
+                                                   )
+             )
+        phenotype_define[phenotype_define>pd.Series(phenotype_define).mean()+3*pd.Series(phenotype_define).std()]=np.nan
+        phenotype_define[phenotype_define<pd.Series(phenotype_define).mean()-3*pd.Series(phenotype_define).std()]=np.nan
     
     log.info('Total values: {}'.format((~np.isnan(phenotype_define)).sum()))                                                  
     pd.Series(phenotype_define).hist()
@@ -308,7 +328,7 @@ elif phenotype_type=='continuous':
 # 
 # -> unhealthy individuals -> if overlap with case-> set as missing
 
-# In[21]:
+# In[23]:
 
 
 if phenotype_type=='binary' and phenotype_name!='sex':
@@ -320,7 +340,7 @@ if phenotype_type=='binary' and phenotype_name!='sex':
     log.info("phenotype defined\n"+str(pd.Series(phenotype_define).value_counts()))
 
 
-# In[22]:
+# In[24]:
 
 
 if phenotype_type=='binary':
@@ -334,7 +354,13 @@ if phenotype_type=='binary':
         log.info("phenotype defined\n"+str(pd.Series(phenotype_define).value_counts()))
 
 
-# In[23]:
+# In[33]:
+
+
+#np.unique(phenotype_define)
+
+
+# In[25]:
 
 
 phenotype_define_df=pd.DataFrame(phenotype_define,index=phenotypes.index)
@@ -350,13 +376,13 @@ phenotype_define_df_noindex[[phenotype_define_df_noindex.columns[0],phenotype_de
 #phenotype_define_df_noindex[[phenotype_define_df_noindex.columns[0],phenotype_define_df_noindex.columns[0],phenotype_define_df_noindex.columns[1]]].to_csv(data_out_assoc_phenotype_path+'phenotype.pheomnibus',index=None,sep='\t')
 
 
-# In[24]:
+# In[26]:
 
 
 phenotype_define_df_noindex.shape
 
 
-# In[25]:
+# In[27]:
 
 
 assert (phenotype_define_df_noindex['pheno']==np.nan).sum()==0
@@ -469,7 +495,7 @@ print(pd.Series(phenotype_define[plink_aa.get_geno_marker(marker_test)==2]).mean
 phenotypes['cohort'].unique()
 
 
-# In[36]:
+# In[ ]:
 
 
 conditional_variant_list=[] #save peak variants for each step
@@ -708,13 +734,13 @@ for idx in range(1,10+1):
     #plink_assoc_result_sorted=plink_assoc_result.sort_values('P')    
     #plink_assoc_result_sorted.to_csv(data_out_assoc_phenotype_path+'step_{:02d}.plink.{}assoc.sorted_'.format(idx,'' if phenotype_type=='binary' else 'q'),sep='\t',index=None)    
     
-    plink_assoc_result=pd.read_csv(data_out_assoc_phenotype_path+'step_{:02d}.plink.PHENO2.glm.{}'.format(idx,'logistic' if phenotype_type=='binary' else 'linear'),sep='\t')
+    plink_assoc_result=pd.read_csv(data_out_assoc_phenotype_path+'step_{:02d}.plink.PHENO2.glm.{}'.format(idx,'logistic' if phenotype_type=='binary' else 'linear'),sep='\t').astype({'P':float})
     plink_assoc_result=plink_assoc_result[plink_assoc_result['TEST']=='ADD']
     plink_assoc_result.to_csv(data_out_assoc_phenotype_path+'step_{:02d}.plink.PHENO2.glm.{}.munged'.format(idx,'logistic' if phenotype_type=='binary' else 'linear'),sep='\t',index=None)
     plink_assoc_result_sorted=plink_assoc_result.sort_values('P')    
     plink_assoc_result_sorted.to_csv(data_out_assoc_phenotype_path+'step_{:02d}.plink.PHENO2.glm.{}.sorted'.format(idx,'logistic' if phenotype_type=='binary' else 'linear'),sep='\t',index=None)
     
-    omnibus_assoc_result=pd.read_csv(data_out_assoc_phenotype_path+'step_{:02d}.omnibus.assoc'.format(idx),sep='\t')
+    omnibus_assoc_result=pd.read_csv(data_out_assoc_phenotype_path+'step_{:02d}.omnibus.assoc'.format(idx),sep='\t').astype({'P':float})
     omnibus_assoc_result.to_csv(data_out_assoc_phenotype_path+'step_{:02d}.omnibus.assoc.munged'.format(idx),sep='\t',index=None)
     omnibus_assoc_result_sorted=omnibus_assoc_result.sort_values('P')
     omnibus_assoc_result_sorted.to_csv(data_out_assoc_phenotype_path+'step_{:02d}.omnibus.assoc.sorted'.format(idx),sep='\t',index=None)
@@ -740,10 +766,4 @@ for idx in range(1,10+1):
             log.info('p-value of {}({}) is larger than 5x10^-8. finish conditional analysis'.format(variant_name,omnibus_assoc_result_sorted.iloc[0]['P']))
             break
     
-
-
-# In[ ]:
-
-
-
 

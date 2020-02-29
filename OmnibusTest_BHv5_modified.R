@@ -37,7 +37,7 @@ if (!require("lmtest")) install.packages("lmtest")
 
 args <- commandArgs(TRUE)
 print('-----------------------------------Argument Information--------------------------------------------')
-print(paste('arguments','--out',args[2],'--fam',args[3],'--aa',args[4],'--phe',args[5],'--phename',args[6],'--covar',args[7],'--covarname',args[8],'--condvar',args[9]))
+print(paste('arguments','--out',args[2],'--fam',args[3],'--aa',args[4],'--phe',args[5],'--covar',args[6],'--covarname',args[7],'--condvar',args[8]))
 print(paste('assoc_mode:',args[1]))
 
 assoc_mode=args[1]
