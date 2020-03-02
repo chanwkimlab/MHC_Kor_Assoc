@@ -134,6 +134,42 @@ Omnibus R code
 null-`glm(pheno.f ~ 1", covarexp, condexp, "+ hap.new.f, family=binomial(logit),maxit=100)`
 alternative-`glm(pheno.f ~ 1", covarexp, condexp, ", family=binomial(logit))`
 `log10pvalue <- pchisq(deviancediff, df=dfdiff, lower.tail=FALSE, log.p=TRUE)/log(10)`
+    
+    
+    
+### Conditional analysis (new)    
+for testing binary allele -> plink
+for testing multiallele allele -> multiallelic module   
+    
+prepare two sets
+1. plink (KCHIP HLA,SNP / 1000G SNP)
+2. bgl.phased (KCHIP HLA,AA,SNP) -> filter bgl.phased (KCHIP HLA,AA)
+    
+1. plink 
+    1.1 covariate
+        KCHIP HLA,SNP 
+    1.2 cond
+2. multiallele
+    2.1 covariate
+        
+    2.2 cond
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 ## conditional analysis (from second step)
 (http://dx.doi.org/10.1038/s41588-018-0336-0
 When the top-associated variant itself was the HLA gene polymorphism or the SNV and indel in strong LD with any of the HLA gene polymorphisms (r2 ≥ 0.7), we additionally included all the two-digit, four-digit and six-digit alleles and the amino acid polymorphisms of the corresponding HLA gene as covariates in the regression to robustly condition the associations attributable to the HLA gene, as previously described4,18. Otherwise, the top-associated SNV and indels were additionally included as the associated variants.)

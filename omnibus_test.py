@@ -3,8 +3,6 @@
 
 # jupyter nbconvert omnibus_test.ipynb --to script
 # 
-# 
-# 
 # example
 # omnibus_test.py    --assoc linear \
 #     --out data/out_assoc/hba1c/step_02.omnibus \
@@ -19,6 +17,15 @@
 # scipy              1.3.2 
 # 
 # statsmodels        0.10.1
+
+# Improvements
+# 
+# Faster than R with same simulation settings and parameters
+# * manually convert categorial input to onehot-encoded input
+# * numpy use modules optimized for cpu(blas)
+# * Integrity check between .fam, pedigree information from .aa
+# * Simpler parameter parsing
+# * can configure CPU thread limit
 
 # In[1]:
 
@@ -72,8 +79,8 @@ parser.add_argument('--condition-list',type=file_path,help='format is the same a
 # In[3]:
 
 
-#debug=False
-debug=True
+debug=False
+#debug=True
 
 if debug:
     args=parser.parse_args('--assoc linear --out data/out_assoc/hba1c/step_02.omnibus --pheno data/out_assoc/hba1c/phenotype.phe --fam data/genotype/4_merge/KCHIP_HLA_SNP_1000G_merged.fam --covar data/out_assoc/hba1c/step_02.omnibus.covar.temp --aa data/out_assoc/hba1c/step_02.aa --condition-list data/out_assoc/hba1c/step_02.omnibus.cond'.split(' '))
@@ -99,44 +106,45 @@ log.addHandler(fileHandler)
 log.addHandler(streamHandler)
 
 
-# In[10]:
+# In[5]:
 
 
 log.info_head=lambda x: log.info('-'*int((100-len(x))/2)+x+'-'*int((100-len(x))/2))
 
 
-# In[11]:
+# In[6]:
 
 
+log.info_head("------------------------------------------")
 log.info_head("Amino Acid Association Test (Omnibus Test)")
 
 
-# In[12]:
+# In[7]:
 
 
 log.info('Parameters\n'+'\n'.join(['--{} {}'.format(key,value) for key,value in vars(args).items()]))
 
 
-# In[13]:
+# In[8]:
 
 
 log.info('Working directory: '+os.getcwd())
 
 
-# In[14]:
+# In[9]:
 
 
 log.info("Start time: "+time.strftime('%c', time.localtime(time.time())))
 
 
-# In[15]:
+# In[10]:
 
 
 assoc=args.assoc
 out=args.out
 
 
-# In[18]:
+# In[11]:
 
 
 log.info_head("Data Loading")
@@ -144,19 +152,19 @@ log.info_head("Data Loading")
 
 # # parse input files
 
-# In[19]:
+# In[12]:
 
 
 fam=pd.read_csv(args.fam,header=None,sep=' ',names=['FID','IID','fID','mID','sex','pheno']).astype({'FID':str,'IID':str,'fID':str,'mID':str,'sex':int,'pheno':float})
 
 
-# In[20]:
+# In[13]:
 
 
 log.info("{} samples ({} males, {} females) loaded from {}".format(fam.shape[0],(fam['sex']==1).sum(),(fam['sex']==2).sum(),args.fam))
 
 
-# In[28]:
+# In[14]:
 
 
 aa_IID_list=None
@@ -203,26 +211,26 @@ with open(args.aa,'r') as f:
 aa_marker_name_list_aaonly=pd.Series(aa_marker_name_list)[pd.Series(aa_marker_name_list).str.slice(stop=3)=='AA_'].values            
 
 
-# In[29]:
+# In[15]:
 
 
 log.info("{} variants ({} AAs) loaded from {}".format(len(aa_marker_name_list),len(aa_marker_name_list_aaonly),args.aa))
 
 
-# In[30]:
+# In[16]:
 
 
 pheno=pd.read_csv(args.pheno,header=None,sep='\t',names=['FID','IID','pheno'])
 pheno['pheno']=pheno['pheno'].replace(-9,np.nan)
 
 
-# In[31]:
+# In[17]:
 
 
 log.info("pheotype loaded from {}".format(args.pheno))
 
 
-# In[32]:
+# In[18]:
 
 
 if args.assoc=='linear':
@@ -232,7 +240,7 @@ else:
     pheno['pheno']=pheno['pheno']-1
 
 
-# In[33]:
+# In[19]:
 
 
 log.info("{} pheotype loaded from {}".format(pheno.shape[0],args.pheno))
@@ -245,7 +253,7 @@ else:
 
 # # parse optional input files
 
-# In[34]:
+# In[20]:
 
 
 if args.covar is None:
@@ -261,7 +269,7 @@ else:
     log.info("{} covariates loaded from {}".format(len(covar.columns[2:]),args.covar))
 
 
-# In[35]:
+# In[21]:
 
 
 if args.condition_list is None:
@@ -269,13 +277,23 @@ if args.condition_list is None:
 else:
     with open(args.condition_list,'r') as f:
         condition_list=f.read().strip().split('\n')
-    log.info("{} covariates loaded from {}".format(len(condition_list),args.condition_list))
-    log.info(', '.join(condition_list))
+        if condition_list[0]=='':
+            condition_list=[]
+            log.warning("Empty --condition-list {}".format(args.condition_list))
+        else:
+            log.info("{} conditions loaded from --condition-list {}".format(len(condition_list),args.condition_list))
+            log.info(', '.join(condition_list))
+
+
+# In[22]:
+
+
+#
 
 
 # # check idx integrity
 
-# In[20]:
+# In[23]:
 
 
 assert np.all(fam['IID']==aa_IID_list)
@@ -288,13 +306,13 @@ assert len(set(condition_list).difference(set(aa_marker_name_list)))==0
 
 # # Run regression
 
-# In[36]:
+# In[24]:
 
 
-log.info_head("Regression")
+log.info_head("Checking missing values(observations)")
 
 
-# In[74]:
+# In[25]:
 
 
 def marker_data_to_onehot(aa_marker_data):
@@ -331,19 +349,19 @@ def prepare_onehot(aa_marker_data_unique_nonan,aa_marker_data_onehot_nonan,set_n
 
 # ## y data
 
-# In[75]:
+# In[26]:
 
 
 y_data_pheno=np.repeat(pheno['pheno'].values,2)
 
 
-# In[76]:
+# In[27]:
 
 
 y_data_pheno_nan=np.isnan(y_data_pheno)
 
 
-# In[77]:
+# In[28]:
 
 
 if np.var(y_data_pheno[~y_data_pheno_nan])==0:
@@ -351,7 +369,7 @@ if np.var(y_data_pheno[~y_data_pheno_nan])==0:
     raise
 
 
-# In[85]:
+# In[29]:
 
 
 log.info("missing values in y_data_pheno: {}".format(y_data_pheno_nan.sum()))
@@ -359,26 +377,26 @@ log.info("missing values in y_data_pheno: {}".format(y_data_pheno_nan.sum()))
 
 # ## x data
 
-# In[78]:
+# In[30]:
 
 
 x_data_intercept=np.array([np.ones(2*fam.shape[0])]).transpose()
 
 
-# In[86]:
+# In[31]:
 
 
 x_data_covar=np.repeat(covar.iloc[:,2:].values,2,axis=0)
 
 
-# In[87]:
+# In[32]:
 
 
 x_data_covar_nan=np.any(np.isnan(x_data_covar),axis=1)
 log.info("missing values in x_data_covar: {}".format(x_data_covar_nan.sum()))
 
 
-# In[81]:
+# In[33]:
 
 
 x_data_covar_varcheck=np.array([np.var(covar) for covar in x_data_covar[~x_data_covar_nan].transpose()])==0
@@ -388,7 +406,7 @@ if np.any(x_data_covar_varcheck):
     x_data_covar=np.delete(x_data_covar,np.arange(len(x_data_covar_varcheck))[x_data_covar_varcheck],axis=1)
 
 
-# In[88]:
+# In[34]:
 
 
 if (x_data_covar.size!=0) and (np.linalg.matrix_rank(x_data_covar)<x_data_covar.shape[1]):
@@ -397,13 +415,7 @@ if (x_data_covar.size!=0) and (np.linalg.matrix_rank(x_data_covar)<x_data_covar.
     #x_data_covar=np.delete(x_data_covar,np.arange(len(x_data_covar_varcheck))[x_data_covar_varcheck],axis=1)
 
 
-# In[ ]:
-
-
-
-
-
-# In[89]:
+# In[35]:
 
 
 temp_list=[x_data_intercept[:,0:0]]
@@ -415,15 +427,16 @@ for aa_marker_name in condition_list:
     temp_list.append(aa_marker_data_onehot_cut)
     
 x_data_condition=np.concatenate(temp_list,axis=1)
+x_data_condition_nan=np.any(np.isnan(x_data_condition),axis=1)  
 
 
-# In[136]:
+# In[36]:
 
 
 log.info("missing values in x_data_condition: {}".format(x_data_condition_nan.sum()))
 
 
-# In[135]:
+# In[37]:
 
 
 """
@@ -437,6 +450,12 @@ for i in range(x_data_condition.shape[1]):
 x_data_condition_nan=np.any(np.isnan(x_data_condition),axis=1)  
 np.linalg.matrix_rank(x_data_condition[~x_data_condition_nan]),x_data_condition.shape[1]
 """            
+
+
+# In[38]:
+
+
+log.info_head("Regression")
 
 
 # In[ ]:
@@ -481,7 +500,7 @@ for idx,aa_marker_name in enumerate(aa_marker_name_list_aaonly):
     try:
         result_alt = model_alt.fit()
         result_null = model_null.fit()
-    except sm.tools.sm_exceptions.PerfectSeparationError as e:
+    except sm.tools.sm_exceptions.PerfectSeparationError as e:        
         nobs=np.nan
         chisq_diff=np.nan
         df_diff=np.nan
@@ -491,7 +510,12 @@ for idx,aa_marker_name in enumerate(aa_marker_name_list_aaonly):
         nobs=result_alt.nobs
         chisq_diff=2*(result_null.llf-result_alt.llf)
         df_diff=result_null.df_model-result_alt.df_model
-        p_value=1 - chi2.cdf(chisq_diff,df_diff)
+        p_value=chi2.sf(chisq_diff,df_diff)        
+        print(result_null.summary())
+        print(result_alt.summary())
+        print(result_null.llf,result_alt.llf)
+        print(result_null.df_model,result_alt.df_model)        
+        #p_value=1 - chi2.cdf(chisq_diff,df_diff)
 
     #print(result_alt.summary())
     assoc_result={'idx':idx+1,
@@ -505,7 +529,7 @@ for idx,aa_marker_name in enumerate(aa_marker_name_list_aaonly):
     
     assoc_result_list.append(assoc_result)
     
-    log.info('[{:3d}/{:3d}] {:10s} {:15s} {:5d} {:.5f}({}) {:.5f}'.format(
+    log.info('[{:3d}/{:3d}] {:10s} {:15s} {:5f} {:.5f}({}) {:e}'.format(
                                 assoc_result['idx'],
                                 len(aa_marker_name_list_aaonly),
                                 assoc_result['ID'],
@@ -515,13 +539,10 @@ for idx,aa_marker_name in enumerate(aa_marker_name_list_aaonly):
                                 assoc_result['df'],
                                 assoc_result['P']
                             ))
-    
-    if idx==120:
-        break
 
 
-# In[174]:
+# In[ ]:
 
 
-pd.DataFrame(assoc_result_list).to_csv(out+'.result',sep='\t',index=None)
+pd.DataFrame(assoc_result_list)[['idx','ID','residues','n_obs','chisq','df','P']].to_csv(out+'.'+assoc,sep='\t',index=None)
 
