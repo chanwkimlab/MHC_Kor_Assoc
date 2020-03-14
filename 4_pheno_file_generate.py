@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# jupyter nbconvert 4_phenotype_file_generate.ipynb --to script
+# jupyter nbconvert 4_pheno_file_generate.ipynb --to script
 # 
 # cd /data/ch6845/MHC*;screen -S assoc;
 # 
 # for i in {0..10};do python 4_association.py $i;done
-# for i in {00..102};do python 4_phenotype_file_generate.py $i;done
+# for i in {00..100};do python 4_pheno_file_generate.py $i;done
 
 # In[1]:
 
@@ -31,115 +31,68 @@ from pyplink import PyPlink
 from basic_tools import *
 
 
+# # load plink, aa and check integrity
+
 # In[2]:
 
 
-final_aa_path,final_plink_path,final_plink_aa_path
+plink_KCHIP_HLA_AA_SNP_1000G=PyPlink(plink_KCHIP_HLA_AA_SNP_1000G_path)
+plink_KCHIP_HLA_AA_SNP_1000G_fam=plink_KCHIP_HLA_AA_SNP_1000G.get_fam().astype({'fid':str,'iid':str}).rename(columns={'fid':'FID','iid':'IID'})
+plink_KCHIP_HLA_AA_SNP_1000G_bim=plink_KCHIP_HLA_AA_SNP_1000G.get_bim()
 
-
-# # load plink, aa and check integrity
 
 # In[3]:
 
 
-plink_path=final_plink_path
-plink_aa_path=final_plink_aa_path
-aa_path=final_aa_path
-
-
-# In[4]:
-
-
-plink=PyPlink(plink_path)
-fam=plink.get_fam().astype({'fid':str,'iid':str}).rename(columns={'fid':'FID','iid':'IID'})
-bim=plink.get_bim()
-
-
-# In[5]:
-
-
-plink_aa=PyPlink(plink_aa_path)
-fam_aa=plink_aa.get_fam().astype({'fid':str,'iid':str}).rename(columns={'fid':'FID','iid':'IID'})
-bim_aa=plink_aa.get_bim()
-
-
-# In[6]:
-
-
-assert (fam['IID']!=fam_aa['IID']).sum()==0
-
-
-# In[7]:
-
-
-f=open(aa_path,'r');aa_ind=f.readline().strip().split(' ')[2:];f.close()
-
-
-# In[8]:
-
-
-aa_ind_1=[aa_ind[i] for i in range(0,len(aa_ind),2)]
-aa_ind_2=[aa_ind[i+1] for i in range(0,len(aa_ind),2)]
-
-
-# In[9]:
-
-
-assert (fam['IID']!=aa_ind_1).sum()==0
-assert (fam['IID']!=aa_ind_2).sum()==0
-
-
-# # load phenotype and check integrity
-
-# In[10]:
-
-
 phenotypes=pd.read_csv(pheno_all_file_path,sep='\t')
-'  '.join(phenotypes.columns)
+phenotypes=phenotypes.set_index('ID').loc[plink_KCHIP_HLA_AA_SNP_1000G_fam['IID']]
+
+#binary_continuous_traits=sorted(phenotypes.columns[~phenotypes.columns.str.contains('x_ray')])
+#binary_continuous_traits    
 
 
-# In[11]:
+# In[ ]:
 
 
-phenotypes=phenotypes.set_index('ID').loc[fam.IID]
-phenotypes.shape
 
 
-# In[12]:
+
+# In[126]:
 
 
-assert (phenotypes.index!=fam['IID']).sum()==0
-
-
-# In[13]:
-
-
-binary_traits=phenotypes.columns[phenotypes.apply(lambda x: (not 'x_ray' in x.name) & (len(x.value_counts())<3),axis=0)]
+binary_traits=phenotypes.columns[phenotypes.apply(lambda x: (len(x.value_counts())<3),axis=0)]
 binary_traits,len(binary_traits)
 
 
-# In[14]:
+# In[127]:
 
 
-continuous_traits=phenotypes.columns[phenotypes.apply(lambda x: (not 'x_ray' in x.name) & (len(x.value_counts())>=3),axis=0)]
+#continuous_traits=phenotypes.columns[phenotypes.apply(lambda x: (x.name!='cohort')&(x.name!='age') & (len(x.value_counts())>=3),axis=0)]
+continuous_traits=phenotypes.columns[phenotypes.apply(lambda x: (len(x.value_counts())>=3),axis=0)]
 continuous_traits
 
 
-# In[15]:
+# In[128]:
 
 
 binary_continuous_traits=sorted(binary_traits.union(continuous_traits))
 binary_continuous_traits
 
 
+# In[129]:
+
+
+len(binary_continuous_traits)
+
+
 # # parse parameter
 
-# In[18]:
+# In[130]:
 
 
 if 'ipykernel' in sys.argv[0]:
     ipykernel=True
-    phenotype_name='child_dead'
+    phenotype_name='FVC_predicted'
     #phenotype_name='height'
     
 else:
@@ -155,14 +108,14 @@ elif phenotype_name in continuous_traits:
     phenotype_type='continuous'        
 
 
-# In[19]:
+# In[131]:
 
 
 #data_out_assoc_phenotype_path=data_out_assoc_path+phenotype_name+'/'
 #pathlib.Path(data_out_assoc_phenotype_path).mkdir(parents=True, exist_ok=True)
 
 
-# In[16]:
+# In[132]:
 
 
 log = logging.getLogger('logger')
@@ -181,13 +134,13 @@ log.addHandler(fileHandler)
 log.addHandler(streamHandler)
 
 
-# In[17]:
+# In[133]:
 
 
 log.info("phenotype_name: {}, phenotype_type:{}".format(phenotype_name,phenotype_type))
 
 
-# In[22]:
+# In[134]:
 
 
 phenotype_define=np.full(len(phenotypes.index),np.nan)
@@ -250,7 +203,7 @@ elif phenotype_type=='continuous':
         phenotype_define[phenotype_define<(pd.Series(phenotype_define).mean()-3*pd.Series(phenotype_define).std())]=np.nan
     
     log.info('Total values: {}'.format((~np.isnan(phenotype_define)).sum()))                                                  
-    pd.Series(phenotype_define).hist()
+    pd.Series(phenotype_define).hist(bins=50)
 
 
 # https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6708789/
@@ -270,7 +223,7 @@ elif phenotype_type=='continuous':
 # 
 # -> unhealthy individuals -> if overlap with case-> set as missing
 
-# In[23]:
+# In[135]:
 
 
 if phenotype_type=='binary' and phenotype_name!='sex':
@@ -282,7 +235,7 @@ if phenotype_type=='binary' and phenotype_name!='sex':
     log.info("phenotype defined\n"+str(pd.Series(phenotype_define).value_counts()))
 
 
-# In[24]:
+# In[136]:
 
 
 if phenotype_type=='binary':
@@ -296,37 +249,37 @@ if phenotype_type=='binary':
         log.info("phenotype defined\n"+str(pd.Series(phenotype_define).value_counts()))
 
 
-# In[33]:
+# In[137]:
 
 
 #np.unique(phenotype_define)
 
 
-# In[25]:
+# In[138]:
 
 
 phenotype_define_df=pd.DataFrame(phenotype_define,index=phenotypes.index)
 
-phenotype_define_df=phenotype_define_df.loc[fam['IID']].fillna(-9)
+phenotype_define_df=phenotype_define_df.loc[plink_KCHIP_HLA_AA_SNP_1000G_fam['IID']].fillna(-9)
 
 if phenotype_name in binary_traits:
     phenotype_define_df=phenotype_define_df.astype(int)
     
 phenotype_define_df_noindex=phenotype_define_df.reset_index().rename(columns={0:'pheno'})
 
-phenotype_define_df_noindex[[phenotype_define_df_noindex.columns[0],phenotype_define_df_noindex.columns[0],phenotype_define_df_noindex.columns[1]]].to_csv(data_out_pheno_path+phenotype_name+'.phe',index=None,header=None,sep='\t')
+phenotype_define_df_noindex[[phenotype_define_df_noindex.columns[0],phenotype_define_df_noindex.columns[0],phenotype_define_df_noindex.columns[1]]].to_csv(pheno_file_path.format(phenotype_name),index=None,header=None,sep='\t')
 
 
 #phenotype_define_df_noindex[[phenotype_define_df_noindex.columns[0],phenotype_define_df_noindex.columns[0],phenotype_define_df_noindex.columns[1]]].to_csv(data_out_assoc_phenotype_path+'phenotype.pheomnibus',index=None,sep='\t')
 
 
-# In[26]:
+# In[139]:
 
 
 phenotype_define_df_noindex.shape
 
 
-# In[27]:
+# In[140]:
 
 
 assert (phenotype_define_df_noindex['pheno']==np.nan).sum()==0
@@ -338,4 +291,72 @@ elif phenotype_type=='continuous':
     log.info(phenotype_define_df_noindex['pheno'].value_counts().iloc[-5:])
 else:
     raise
+
+
+# In[141]:
+
+
+cohort_to_name=lambda x: 'AS' if x==1 else 'CT' if x==2 else 'NC' if x==3 else 'error'
+
+
+# In[142]:
+
+
+for cohort in sorted(phenotypes['cohort'].unique()):
+    log.info('------------------per cohort---------------------------')
+    cohort_check=(phenotypes['cohort']==cohort)
+
+
+# In[143]:
+
+
+#print(phenotype_stat)
+
+
+# In[145]:
+
+
+if phenotype_type=='binary':
+    value=phenotype_define_df_noindex['pheno']
+    phenotype_stat=pd.DataFrame([value[(phenotypes['cohort']==cohort).values].value_counts().rename(cohort_to_name(cohort)) for cohort in phenotypes['cohort'].unique()])
+    phenotype_stat=phenotype_stat.rename(columns={2: 'case', 1: 'control',-9:'missing'})
+    phenotype_stat=phenotype_stat[phenotype_stat.columns.sort_values()].fillna(0)
+    phenotype_stat=phenotype_stat.loc[phenotype_stat.index.sort_values()]
+    
+    fig=plt.figure()
+    plt.table(cellText=phenotype_stat.values,
+              colWidths = [0.3]*3,
+              rowLabels=phenotype_stat.index,
+              colLabels=phenotype_stat.columns,
+              loc='center right')
+    plt.axis('off')
+    #plt.show()    
+    plt.savefig(pheno_file_path.format(phenotype_name)+'.svg')
+    
+    
+if phenotype_type=='continuous':
+    value=phenotype_define_df_noindex['pheno']
+    
+    fig=plt.figure()
+    #plt.title(new_name)
+    for cohort in sorted(phenotypes['cohort'].unique()):
+        cohort_check=(phenotypes['cohort']==cohort).values
+        #print(cohort_check)
+        #print(value[cohort_check])
+        if np.all(value[cohort_check]==-9):
+            continue
+        y, x, _ =plt.hist(value[cohort_check & (value!=-9)],bins=20,color=plt.cm.rainbow(cohort/3),label=cohort_to_name(cohort),alpha=0.3)
+    plt.legend(loc='upper left')
+    #plt.show()
+    plt.axvline(x=value[value!=-9].mean(),linewidth=0.5,color='grey')
+    plt.text(x=value[value!=-9].mean(),y=value[value!=-9].value_counts().max(),s='mean: {:.2f}\n std:{:.2f}'.format(value[(value!=-9)].mean(),value[(value!=-9)].std()) ,horizontalalignment='center',verticalalignment='center',)
+    plt.savefig(pheno_file_path.format(phenotype_name)+'.svg')
+    
+    
+
+
+# In[ ]:
+
+
+
 

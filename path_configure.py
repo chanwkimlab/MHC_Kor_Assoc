@@ -24,14 +24,13 @@ individual_common_path=data_path+'individual.tsv'
 
 #plink_KCHIP_HLA_AA_SNP_1000G_path=data_genotype_merge_path+'KCHIP_HLA_AA_SNP_1000G'
 plink_KCHIP_HLA_AA_SNP_1000G_path=data_genotype_merge_path+'KCHIP_HLA_AA_SNP_1000G'
-plink_KCHIP_HLA_SNP_1000G_path=data_genotype_merge_path+'KCHIP_HLA_SNP_1000G' # for association
+#plink_KCHIP_HLA_SNP_1000G_path=data_genotype_merge_path+'KCHIP_HLA_SNP_1000G' # for association
+plink_KCHIP_SNP_1000G_path=data_genotype_merge_path+'KCHIP_SNP_1000G'
 plink_1000G_path=data_genotype_merge_path+'1000G'
 #plink_KCHIP_HLA_SNP_path=data_genotype_merge_path+'KCHIP_SNP'
-
-#plink_KCHIP_SNP_1000G_path=data_genotype_merge_path+'KCHIP_SNP_1000G'
 #plink_1000G_path=data_genotype_merge_path+'1000G'
 
-phased_KCHIP_HLA_AA_path=data_genotype_merge_path+'KCHIP_HLA_AA.bgl.phased'
+#phased_KCHIP_HLA_AA_path=data_genotype_merge_path+'KCHIP_HLA_AA.bgl.phased'
 phased_KCHIP_HLA_AA_SNP_path=data_genotype_merge_path+'KCHIP_HLA_AA_SNP.bgl.phased'
 
 

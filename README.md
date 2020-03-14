@@ -42,6 +42,9 @@ code
 
 
 # Abstract - Introduction
+Population specific LD structure ?? -> 다르다??
+imputation method, large sample size, reference panel
+newly identified loci -> ?
 * Large scale cohort
 imputing genotype for large numer of individuals is very computationally burdensome
 Power
@@ -200,123 +203,5 @@ to see pleiotropic effect
 <GCTA>
 ### convert plink file of (HLA gene, AA residue, SNP) to GRM(genetic relationship matrix)
 ### Haseman–Elston regression
-
-
-
-
-
-
-
-그 과정에서 몇가지 중요사항/궁금증이 있습니다.
-
-* Haseman–Elston regression 결과
-시험삼아 height의 heritability를 측정하였습니다.
-결과의 V(G)/V(P)값이 0.0005로 나왔습니다.
-japan논문에서는 (http://dx.doi.org/10.1038/s41588-018-0336-0 Supplementary Table 5.)
-0.0052로 나왔습니다.
-MHC region만을 가지고 분석을 하였기 때문에, heritability가 작은 것은 당연하나, japan에 비해 저희 것은 1/10로 나왔습니다.
-japan은 WGS를 하였고 non-classical HLA gene도 typing하였으나, 저희는 그렇지 않기 때문이라고 볼 수 있을까요?
-
-* continuous trait의 p-value가 지나치게 큰 현상
-association test를 진행중이긴한데, 총 47개의 binary trait에 대해서는 대략 5개 정도가 5*10^-8보다 작은 signal이 나왔습니다.
-이에 비해 continuous trait의 경우, 여러 loci에 대해 omnibus test signal이 지나치게 작게 나오는 현상이 있습니다.
-`head -n4 /data/ch6845/MHC_phewas_testbench/data/out_assoc/*/*sorted` command를 통해 association 결과를 확인하실 수 있는데,
-(omnibus result, plink result) 이 중 *.plink.assoc.linear.sorted파일이 있는 phenotype은 continuous trait입니다.
-
-혹시 glm(pheno.f ~ 1", covarexp, condexp, "+ hap.new.f, family=gaussian(identity)를 통해 linear association test를 하는데
-phenotype이 inverse rank normal transformation을 이용해서 normal distribution로 변환시키지 않아 발생하는 문제인가하는 생각도 해보았는데
-grip_strength 같은 비교적 normal에 가까운 phenotype들도 omnibus test 결과가 크게 나왔습니다.
-(/data/ch6845/MHC_phewas_testbench/data/out_assoc/grip_strength/step_01.omnibus.assoc)
-
-혹시 제가 잘못하고 있는 것이 있을까요?
-
-*
-어떤 논문에서는 https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6292650/#pgen.1007833.s001 S1 Table
-HLA gene-based omnibus test도 하던데, 이런 analsis를 많이 하지 않는 이유가 있나요?
-제 추측으로는 AA residue에 비해 HLA gene allele는 가지 수가 많아, degree of freedom이 커지고
-binary Present/Absent로 association을 시키는 것에 비해 이득이 크지 않기 때문이 아닐까라는 생각이 드는데, 맞을까요?
-
-
-* Omnibus test code 수정
-1. R 내장 .tsv read함수(data.table) 대신 fread 함수를 사용하였습니다.
-https://stackoverflow.com/questions/24369307/r-read-table-extremely-slow
-https://csgillespie.github.io/efficientR/5-3-importing-data.html
-파일의 크기가 클 경우 큰 시간 차이가 나는 것 같습니다.
-제가 테스트 해본 결과, 결과에는 차이가 없고 *.aa(AA만 포함) 파일 로딩 시간은 기존의 5%이하로 줄어들어 1분안에 load 됩니다.
-2. linear association
-linear association도 가능하도록 R파일 실행 parameter를 추가하고, linear일 경우 family=binary대신 family=gaussian를 사용하도록 했습니다.
---trivial--
-3. covar도 다른 is.live.aa, is.live.phe 처럼 is.live.covar같은 형태로 NA 값을 분석에서 제외하도록 하였습니다.
-4. debugging을 위해 진행상황을 좀 더 자주 출력하도록 수정하였습니다.
-5. phenotype 파일을 읽어들이는 부분을 수정하여 plink와 consistent한 파일 형태를 사용하도록 하였습니다.
-
-x=rnorm(100)
-y=rbinom(100,size=1,prob=.5)
-glm.rst=glm(y~x, family=binomial(logit))
-summary(glm.rst)$deviance
-deviance(glm.rst)
-logLik(glm.rst)
-
-
-x=rnorm(100)
-y=rnorm(100)
-glm.rst=glm(y~x, family=gaussian(identity))
-lm.rst=lm(y~x)
-summary(glm.rst)$deviance
-deviance(glm.rst)
-deviance(lm.rst)
-logLik(glm.rst)
-logLik(lm.rst)
-
-
-
-
-
-
-glm.null <- glm(pheno.f ~ 1 + covar.f[,1] + covar.f[,2] + covar.f[,3] + covar.f[,4],family=binomial(logit))
-glm.alt <- glm(pheno.f ~ 1 + covar.f[,1] + covar.f[,2] + covar.f[,3] + covar.f[,4]+ hap.new.f,family=binomial(logit))
-
-deviance(glm.null)
-deviance(glm.alt)
-
-logLik(glm.alt)
-logLik(glm.null)
-
-summary(glm.alt)$df[1]
-summary(glm.null)$df[1]
-
-pchisq(deviance(glm.null)-deviance(glm.alt), df=summary(glm.alt)$df[1]-summary(glm.null)$df[1], lower.tail=FALSE)
-require(lmtest)
-lrtest(glm.null,glm.alt)
-
-
-
-glm.null <- glm(pheno.f ~ 1 + covar.f[,1] + covar.f[,2] + covar.f[,3] + covar.f[,4])
-glm.alt <- glm(pheno.f ~ 1 + covar.f[,1] + covar.f[,2] + covar.f[,3] + covar.f[,4]+ hap.new.f)
-lm.null <- lm(pheno.f ~ 1 + covar.f[,1] + covar.f[,2] + covar.f[,3] + covar.f[,4])
-lm.alt <- lm(pheno.f ~ 1 + covar.f[,1] + covar.f[,2] + covar.f[,3] + covar.f[,4]+ hap.new.f)
-deviance(glm.null)
-deviance(glm.alt)
-deviance(lm.null)
-deviance(lm.alt)
-
-logLik(glm.alt)
-logLik(glm.null)
-logLik(lm.alt)
-logLik(lm.null)
-
-
-summary(glm.alt)$df[1]
-summary(glm.null)$df[1]
-summary(lm.alt)$df[1]
-summary(lm.null)$df[1]
-
-pchisq(deviance(glm.null)-deviance(glm.alt), df=summary(glm.alt)$df[1]-summary(glm.null)$df[1], lower.tail=FALSE)
-require(lmtest)
-lrtest(glm.null,glm.alt)
-
-
-
-
 
 
