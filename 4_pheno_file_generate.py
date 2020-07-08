@@ -7,6 +7,8 @@
 # 
 # for i in {0..10};do python 4_association.py $i;done
 # for i in {00..100};do python 4_pheno_file_generate.py $i;done
+# 
+# tar -cvf distribution.tar data/out_pheno/*svg 
 
 # In[1]:
 
@@ -87,12 +89,12 @@ len(binary_continuous_traits)
 
 # # parse parameter
 
-# In[130]:
+# In[146]:
 
 
 if 'ipykernel' in sys.argv[0]:
     ipykernel=True
-    phenotype_name='FVC_predicted'
+    phenotype_name='diabetes'
     #phenotype_name='height'
     
 else:
@@ -108,14 +110,14 @@ elif phenotype_name in continuous_traits:
     phenotype_type='continuous'        
 
 
-# In[131]:
+# In[147]:
 
 
 #data_out_assoc_phenotype_path=data_out_assoc_path+phenotype_name+'/'
 #pathlib.Path(data_out_assoc_phenotype_path).mkdir(parents=True, exist_ok=True)
 
 
-# In[132]:
+# In[148]:
 
 
 log = logging.getLogger('logger')
@@ -134,13 +136,13 @@ log.addHandler(fileHandler)
 log.addHandler(streamHandler)
 
 
-# In[133]:
+# In[149]:
 
 
 log.info("phenotype_name: {}, phenotype_type:{}".format(phenotype_name,phenotype_type))
 
 
-# In[134]:
+# In[150]:
 
 
 phenotype_define=np.full(len(phenotypes.index),np.nan)
@@ -223,19 +225,7 @@ elif phenotype_type=='continuous':
 # 
 # -> unhealthy individuals -> if overlap with case-> set as missing
 
-# In[135]:
-
-
-if phenotype_type=='binary' and phenotype_name!='sex':
-    unhealthy_individuals=(phenotypes['diabetes']==2)|                            (phenotypes['hyperlipidemia']==2)|                            (phenotypes['hypertension']==2)|                            (phenotypes['allergic_disease']==2)|                            (phenotypes['colon_polyps']==2)|                            (phenotypes['rheumatoid_arthritis']==2)
-    log.info("unhealthy individuals: {}".format(unhealthy_individuals.sum()))
-    log.info("unhealthy individuals among control removed: {}".format(((phenotype_define==1) & (unhealthy_individuals)).sum()))
-    phenotype_define[(phenotype_define==1) & (unhealthy_individuals)]=np.nan
-    ## change to np.nan and test!!
-    log.info("phenotype defined\n"+str(pd.Series(phenotype_define).value_counts()))
-
-
-# In[136]:
+# In[152]:
 
 
 if phenotype_type=='binary':
@@ -247,6 +237,29 @@ if phenotype_type=='binary':
         log.info('exclude women: {}'.format(((~np.isnan(phenotype_define))&(phenotypes['sex']==2)).sum()))
         phenotype_define[(~np.isnan(phenotype_define))&(phenotypes['sex']==2)]=np.nan
         log.info("phenotype defined\n"+str(pd.Series(phenotype_define).value_counts()))
+
+
+# In[153]:
+
+
+pheno_file_path.format(phenotype_name)
+
+
+# In[151]:
+
+
+if phenotype_type=='binary' and phenotype_name!='sex':
+    prev=(phenotype_define==2).sum()/((phenotype_define==1).sum()+(phenotype_define==2).sum())
+    print('prev:',prev)
+    with open(pheno_file_path.format(phenotype_name)+'.prev','w') as f:
+        f.write(str(prev))
+        
+    unhealthy_individuals=(phenotypes['diabetes']==2)|                            (phenotypes['hyperlipidemia']==2)|                            (phenotypes['hypertension']==2)|                            (phenotypes['allergic_disease']==2)|                            (phenotypes['colon_polyps']==2)|                            (phenotypes['rheumatoid_arthritis']==2)
+    log.info("unhealthy individuals: {}".format(unhealthy_individuals.sum()))
+    log.info("unhealthy individuals among control removed: {}".format(((phenotype_define==1) & (unhealthy_individuals)).sum()))
+    phenotype_define[(phenotype_define==1) & (unhealthy_individuals)]=np.nan
+    ## change to np.nan and test!!
+    log.info("phenotype defined\n"+str(pd.Series(phenotype_define).value_counts()))
 
 
 # In[137]:

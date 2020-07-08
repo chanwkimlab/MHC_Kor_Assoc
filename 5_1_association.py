@@ -29,37 +29,24 @@ from basic_tools import *
 
 jupyter nbconvert 5_1_association.ipynb --to script
 
-python 5_1_association.py height 0 0,1,2;done
+python 5_1_association.py height 1 0,1,2
 
 
 
 
-for i in {00..101};do python 5_association.py $i 2 0,1,2;done
-for i in {00..10};do python 5_association.py $i 2 0;done
-for i in {11..20};do python 5_association.py $i 7 0;done
-for i in {21..30};do python 5_association.py $i 7 0;done
-for i in {31..40};do python 5_association.py $i 7 0;done
-for i in {41..50};do python 5_association.py $i 7 0;done
-for i in {51..60};do python 5_association.py $i 7 0;done
-for i in {61..70};do python 5_association.py $i 7 0;done
-for i in {71..80};do python 5_association.py $i 7 0;done
-for i in {81..90};do python 5_association.py $i 7 0;done
-for i in {91..101};do python 5_association.py $i 7 0;done
+for i in {00..97};do python 5_1_association.py $i 1 0,1,2;done
 
-for i in {101};do python 5_association.py $i 5 0;done
-for i in {51..60};do python 5_association.py $i 5 0;done
-for i in {51..60};do python 5_association.py $i 5 0;done
-for i in {51..60};do python 5_association.py $i 5 0;done
 
-for i in {00..101};do python 5_association.py $i 1 0,2;done
-for i in {00..101};do python 5_association.py $i 1 1;done
-
-for i in {00..20};do python 5_association.py $i 1 1;done
-for i in {21..40};do python 5_association.py $i 1 1;done
-for i in {41..60};do python 5_association.py $i 1 1;done
-for i in {61..80};do python 5_association.py $i 1 1;done
-for i in {81..101};do python 5_association.py $i 1 1;done
-
+for i in {00..10};do python 5_1_association.py $i 1 0;done
+for i in {11..20};do python 5_1_association.py $i 1 0;done
+for i in {21..30};do python 5_1_association.py $i 1 0;done
+for i in {31..40};do python 5_1_association.py $i 1 0;done
+for i in {41..50};do python 5_1_association.py $i 1 0;done
+for i in {51..60};do python 5_1_association.py $i 1 0;done
+for i in {61..70};do python 5_1_association.py $i 1 0;done
+for i in {71..80};do python 5_1_association.py $i 1 0;done
+for i in {81..90};do python 5_1_association.py $i 1 0;done
+for i in {91..97};do python 5_1_association.py $i 1 0;done
 """
 
 
@@ -71,7 +58,13 @@ plink_KCHIP_HLA_AA_SNP_1000G_fam=plink_KCHIP_HLA_AA_SNP_1000G.get_fam().astype({
 plink_KCHIP_HLA_AA_SNP_1000G_bim=plink_KCHIP_HLA_AA_SNP_1000G.get_bim()
 
 
-# In[12]:
+# In[42]:
+
+
+#len(binary_continuous_traits)
+
+
+# In[44]:
 
 
 phenotypes=pd.read_csv(pheno_all_file_path,sep='\t')
@@ -82,8 +75,8 @@ binary_continuous_traits=phenotypes.columns.difference(['age','sex','cohort'])
 
 if 'ipykernel' in sys.argv[0]:
     ipykernel=True
-    phenotype_name='height'
-    step_idx=0
+    phenotype_name='FEV_over_FVC_predicted'
+    step_idx=1
     mode_list=[0]
     #phenotype_name='height'
 else:
@@ -97,14 +90,14 @@ if phenotype_name.isdigit():
     phenotype_name=binary_continuous_traits[phenotype_name]      
 
 
-# In[13]:
+# In[45]:
 
 
 data_out_assoc_phenotype_path=data_out_assoc_path+phenotype_name+'/'
 pathlib.Path(data_out_assoc_phenotype_path).mkdir(parents=True, exist_ok=True)
 
 
-# In[15]:
+# In[46]:
 
 
 #for i in binary_continuous_traits:
@@ -112,7 +105,7 @@ pathlib.Path(data_out_assoc_phenotype_path).mkdir(parents=True, exist_ok=True)
 #        print(i)
 
 
-# In[16]:
+# In[52]:
 
 
 pheno=pd.read_csv(data_out_pheno_path+phenotype_name+'.phe',sep='\t',names=['FID','IID','pheno'])
@@ -176,19 +169,19 @@ for step_idx_sub in range(1,step_idx+1):
         sys.exit()
 
 
-# In[32]:
+# In[48]:
 
 
 #gene_bed['name2'][gene_bed['name2'].str.contains('HLA')]
 
 
-# In[35]:
+# In[49]:
 
 
 #gene_assign.shape
 
 
-# In[33]:
+# In[50]:
 
 
 gene_bed_path='data/known_genes_chr6.hg19.txt'
@@ -214,18 +207,28 @@ for HLA_name in HLA_names:
     gene_assign[HLA_name][(gene_assign['pos']>=gene_select['pos'].min())&(gene_assign['pos']<=gene_select['pos'].max())]=1 
 
 
-# In[37]:
+# In[53]:
 
 
 covariate_df=pd.read_csv(PC_path,sep='\t').set_index('ID').loc[plink_KCHIP_HLA_AA_SNP_1000G_fam['IID']]
 covariate_df['age']=phenotypes['age']
 covariate_df['sex']=phenotypes['sex']-1
-
-if np.all((pheno['pheno']==-9) | ((phenotypes['cohort']==1)|(phenotypes['cohort']==2))):
+if np.all((pheno['pheno']==-9).values | (phenotypes['cohort']==1).values):
+    pass
+elif np.all((pheno['pheno']==-9).values | (phenotypes['cohort']==2).values):
+    pass
+elif np.all((pheno['pheno']==-9).values | (phenotypes['cohort']==3).values):
+    pass
+elif np.all((pheno['pheno']==-9).values | ((phenotypes['cohort']==1).values|(phenotypes['cohort']==2).values)):
     covariate_df['AS']=phenotypes['cohort'].replace(1,1).replace(2,0).replace(3,0)
+elif np.all((pheno['pheno']==-9).values | ((phenotypes['cohort']==2)|(phenotypes['cohort']==3).values)):
+    covariate_df['CT']=phenotypes['cohort'].replace(1,0).replace(2,1).replace(3,0)    
+elif np.all((pheno['pheno']==-9).values | ((phenotypes['cohort']==1)|(phenotypes['cohort']==3).values)):
+    covariate_df['AS']=phenotypes['cohort'].replace(1,1).replace(2,0).replace(3,0)        
 else:
     covariate_df['AS']=phenotypes['cohort'].replace(1,1).replace(2,0).replace(3,0)
     covariate_df['CT']=phenotypes['cohort'].replace(1,0).replace(2,1).replace(3,0)
+    
 plink_KCHIP_HLA_AA_SNP_1000G_fam.iloc[:,:2].merge(right=covariate_df,left_on='IID',right_index=True).fillna(-9).to_csv(data_out_assoc_phenotype_path+'covar',index=None,sep='\t')
 
 
@@ -324,7 +327,7 @@ if 1 in mode_list:
         log.info("######################################### step {:02d} Phased Association  #########################################".format(step_idx))
 
 
-        command='python Generic_Association_Tool/GAT.py         --assoc {assoc_mode}         --out {out}         --bfile {bfile}         --bgl-phased {bgl_phased}         --pheno {pheno}         --covar {covar}         --condition-list {cond}         --skip "(?P<name>6:[0-9]*_[A-Z]*/[\<\>A-Z\:0-9]*),(?P<name>AZ\-[0-9]*),(?P<name>SNPS_.*),(?P<name>INS_SNPS_.*)"         --multialleic "(?P<name>HLA_[0-9A-Z]*)\*(?P<allele>[0-9:]*)"         --multialleic-always "(?P<name>AA_[A-Z0-9]*_[\-0-9]*_[0-9]*_exon[0-9]*)_*(?P<allele>[A-Z]*)"'.format(
+        command='python Generic_Association_Tool/GAT.py         --assoc {assoc_mode}         --out {out}         --bfile {bfile}         --bgl-phased {bgl_phased}         --pheno {pheno}         --covar {covar}         --condition-list {cond}         --skip "(?P<name>6:[0-9]*_[A-Z]*/[\<\>A-Z\:0-9]*),(?P<name>AX\-[0-9]*),(?P<name>AFFX\-SP\-[0-9]*),(?P<name>SNPS_.*),(?P<name>INS_SNPS_.*)"         --multialleic "(?P<name>HLA_[0-9A-Z]*)\*(?P<allele>[0-9:]*)"         --multialleic-always "(?P<name>AA_[A-Z0-9]*_[\-0-9]*_[0-9]*_exon[0-9]*)_*(?P<allele>[A-Z]*)"'.format(
         assoc_mode='logistic' if phenotype_type=='binary' else 'linear',
         out=data_out_assoc_phenotype_path+'step_{:02d}.GAT'.format(step_idx),
         bfile=plink_1000G_path,
@@ -363,7 +366,6 @@ if 2 in mode_list:
         stdout,stderr=run_subprocess(command,dry=False)
         log.info(stdout)
         log.error(stderr)  
-
 
 
 # # Deprecated
