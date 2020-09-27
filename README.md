@@ -24,7 +24,7 @@ We wanted to use this new single-population dataset to confirm already reported 
 ![height](github_images/height.step_01.merge.manhattan.png)
 
 
-# Software used
+# Software
 
 ## Genotype munge
 - [Vcftools](http://vcftools.sourceforge.net/)
