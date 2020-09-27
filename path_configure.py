@@ -14,6 +14,7 @@ data_codebook_path=data_path+'codebook/'
 data_out_pheno_path=data_path+'out_pheno/'
 data_out_assoc_path=data_path+'out_assoc/'
 data_out_gcta_path=data_path+'out_gcta/'
+data_out_pub_path=data_path+'out_pub/'
 
 #########Files############
 

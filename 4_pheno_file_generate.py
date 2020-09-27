@@ -48,25 +48,18 @@ plink_KCHIP_HLA_AA_SNP_1000G_bim=plink_KCHIP_HLA_AA_SNP_1000G.get_bim()
 
 phenotypes=pd.read_csv(pheno_all_file_path,sep='\t')
 phenotypes=phenotypes.set_index('ID').loc[plink_KCHIP_HLA_AA_SNP_1000G_fam['IID']]
-
 #binary_continuous_traits=sorted(phenotypes.columns[~phenotypes.columns.str.contains('x_ray')])
 #binary_continuous_traits    
 
 
-# In[ ]:
-
-
-
-
-
-# In[126]:
+# In[4]:
 
 
 binary_traits=phenotypes.columns[phenotypes.apply(lambda x: (len(x.value_counts())<3),axis=0)]
 binary_traits,len(binary_traits)
 
 
-# In[127]:
+# In[5]:
 
 
 #continuous_traits=phenotypes.columns[phenotypes.apply(lambda x: (x.name!='cohort')&(x.name!='age') & (len(x.value_counts())>=3),axis=0)]
@@ -74,14 +67,14 @@ continuous_traits=phenotypes.columns[phenotypes.apply(lambda x: (len(x.value_cou
 continuous_traits
 
 
-# In[128]:
+# In[6]:
 
 
 binary_continuous_traits=sorted(binary_traits.union(continuous_traits))
 binary_continuous_traits
 
 
-# In[129]:
+# In[8]:
 
 
 len(binary_continuous_traits)
@@ -89,12 +82,12 @@ len(binary_continuous_traits)
 
 # # parse parameter
 
-# In[146]:
+# In[23]:
 
 
 if 'ipykernel' in sys.argv[0]:
     ipykernel=True
-    phenotype_name='diabetes'
+    phenotype_name='t2_diabetes'
     #phenotype_name='height'
     
 else:
@@ -110,14 +103,14 @@ elif phenotype_name in continuous_traits:
     phenotype_type='continuous'        
 
 
-# In[147]:
+# In[24]:
 
 
 #data_out_assoc_phenotype_path=data_out_assoc_path+phenotype_name+'/'
 #pathlib.Path(data_out_assoc_phenotype_path).mkdir(parents=True, exist_ok=True)
 
 
-# In[148]:
+# In[10]:
 
 
 log = logging.getLogger('logger')
@@ -136,13 +129,13 @@ log.addHandler(fileHandler)
 log.addHandler(streamHandler)
 
 
-# In[149]:
+# In[25]:
 
 
 log.info("phenotype_name: {}, phenotype_type:{}".format(phenotype_name,phenotype_type))
 
 
-# In[150]:
+# In[26]:
 
 
 phenotype_define=np.full(len(phenotypes.index),np.nan)
@@ -225,7 +218,7 @@ elif phenotype_type=='continuous':
 # 
 # -> unhealthy individuals -> if overlap with case-> set as missing
 
-# In[152]:
+# In[27]:
 
 
 if phenotype_type=='binary':
@@ -239,13 +232,13 @@ if phenotype_type=='binary':
         log.info("phenotype defined\n"+str(pd.Series(phenotype_define).value_counts()))
 
 
-# In[153]:
+# In[28]:
 
 
 pheno_file_path.format(phenotype_name)
 
 
-# In[151]:
+# In[29]:
 
 
 if phenotype_type=='binary' and phenotype_name!='sex':
@@ -262,13 +255,13 @@ if phenotype_type=='binary' and phenotype_name!='sex':
     log.info("phenotype defined\n"+str(pd.Series(phenotype_define).value_counts()))
 
 
-# In[137]:
+# In[30]:
 
 
 #np.unique(phenotype_define)
 
 
-# In[138]:
+# In[31]:
 
 
 phenotype_define_df=pd.DataFrame(phenotype_define,index=phenotypes.index)
@@ -286,13 +279,13 @@ phenotype_define_df_noindex[[phenotype_define_df_noindex.columns[0],phenotype_de
 #phenotype_define_df_noindex[[phenotype_define_df_noindex.columns[0],phenotype_define_df_noindex.columns[0],phenotype_define_df_noindex.columns[1]]].to_csv(data_out_assoc_phenotype_path+'phenotype.pheomnibus',index=None,sep='\t')
 
 
-# In[139]:
+# In[32]:
 
 
 phenotype_define_df_noindex.shape
 
 
-# In[140]:
+# In[33]:
 
 
 assert (phenotype_define_df_noindex['pheno']==np.nan).sum()==0
@@ -306,27 +299,25 @@ else:
     raise
 
 
-# In[141]:
+# In[34]:
 
 
 cohort_to_name=lambda x: 'AS' if x==1 else 'CT' if x==2 else 'NC' if x==3 else 'error'
 
 
-# In[142]:
+# In[ ]:
 
 
-for cohort in sorted(phenotypes['cohort'].unique()):
-    log.info('------------------per cohort---------------------------')
-    cohort_check=(phenotypes['cohort']==cohort)
 
 
-# In[143]:
+
+# In[35]:
 
 
 #print(phenotype_stat)
 
 
-# In[145]:
+# In[36]:
 
 
 if phenotype_type=='binary':

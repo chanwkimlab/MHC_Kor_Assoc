@@ -86,7 +86,7 @@ assert (phenotypes.index!=plink_KCHIP_HLA_AA_SNP_1000G_fam['IID']).sum()==0
 # In[9]:
 
 
-binary_continuous_traits=phenotypes.columns.difference(['age','sex','cohort'])
+binary_continuous_traits=phenotypes.columns.difference(['age','sex','cohort','diabetes'])
 binary_continuous_traits,len(binary_continuous_traits)
 
 
@@ -102,12 +102,13 @@ if 'ipykernel' in sys.argv[0]:
 else:
     ipykernel=False
     phenotype_name=sys.argv[1]
+    
 if phenotype_name.isdigit():
     phenotype_name=int(phenotype_name)
     phenotype_name=binary_continuous_traits[phenotype_name]      
 
 
-# In[12]:
+# In[10]:
 
 
 pheno=pd.read_csv(data_out_pheno_path+phenotype_name+'.phe',sep='\t',header=None,names=['FID','IID','pheno'])
@@ -115,11 +116,20 @@ phenotype_type='binary' if len(pheno['pheno'][pheno['pheno']!=-9].value_counts()
 phenotype_type
 
 
-# In[13]:
+# In[ ]:
 
 
-for i in binary_continuous_traits:
-    print(i,os.path.exists(data_out_gcta_path+i+'.HEreg'))
+
+
+
+# In[16]:
+
+
+for a,i in enumerate(binary_continuous_traits):
+    if not os.path.exists(data_out_gcta_path+i+'.HEreg'):
+        print(a)
+        #print(a)
+        print(i,os.path.exists(data_out_gcta_path+i+'.HEreg'))
 
 
 # In[14]:

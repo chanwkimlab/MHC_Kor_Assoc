@@ -33,20 +33,36 @@ python 5_1_association.py height 1 0,1,2
 
 
 
+for i in {00..10};do python 5_1_association.py $i 1 0,1,2;done
+for i in {11..20};do python 5_1_association.py $i 1 0,1,2;done
 
-for i in {00..97};do python 5_1_association.py $i 1 0,1,2;done
+for i in {21..30};do python 5_1_association.py $i 1 0,1,2;done
+for i in {31..40};do python 5_1_association.py $i 1 0,1,2;done
+
+for i in {41..50};do python 5_1_association.py $i 1 0,1,2;done
+for i in {51..60};do python 5_1_association.py $i 1 0,1,2;done
+
+for i in {61..70};do python 5_1_association.py $i 1 0,1,2;done
+for i in {71..80};do python 5_1_association.py $i 1 0,1,2;done
+
+for i in {81..90};do python 5_1_association.py $i 1 0,1,2;done
+for i in {91..97};do python 5_1_association.py $i 1 0,1,2;done
 
 
-for i in {00..10};do python 5_1_association.py $i 1 0;done
-for i in {11..20};do python 5_1_association.py $i 1 0;done
-for i in {21..30};do python 5_1_association.py $i 1 0;done
-for i in {31..40};do python 5_1_association.py $i 1 0;done
-for i in {41..50};do python 5_1_association.py $i 1 0;done
-for i in {51..60};do python 5_1_association.py $i 1 0;done
-for i in {61..70};do python 5_1_association.py $i 1 0;done
-for i in {71..80};do python 5_1_association.py $i 1 0;done
-for i in {81..90};do python 5_1_association.py $i 1 0;done
-for i in {91..97};do python 5_1_association.py $i 1 0;done
+for i in {00..10};do python 5_1_association.py $i 2 0;done
+for i in {11..20};do python 5_1_association.py $i 2 0;done
+
+for i in {21..30};do python 5_1_association.py $i 2 0;done
+for i in {31..40};do python 5_1_association.py $i 2 0;done
+
+for i in {41..50};do python 5_1_association.py $i 2 0;done
+for i in {51..60};do python 5_1_association.py $i 2 0;done
+
+for i in {61..70};do python 5_1_association.py $i 2 0;done
+for i in {71..80};do python 5_1_association.py $i 2 0;done
+
+for i in {81..90};do python 5_1_association.py $i 2 0;done
+for i in {91..97};do python 5_1_association.py $i 2 0;done
 """
 
 
@@ -58,24 +74,18 @@ plink_KCHIP_HLA_AA_SNP_1000G_fam=plink_KCHIP_HLA_AA_SNP_1000G.get_fam().astype({
 plink_KCHIP_HLA_AA_SNP_1000G_bim=plink_KCHIP_HLA_AA_SNP_1000G.get_bim()
 
 
-# In[42]:
-
-
-#len(binary_continuous_traits)
-
-
-# In[44]:
+# In[141]:
 
 
 phenotypes=pd.read_csv(pheno_all_file_path,sep='\t')
 phenotypes=phenotypes.set_index('ID').loc[plink_KCHIP_HLA_AA_SNP_1000G_fam['IID']]
 
-binary_continuous_traits=phenotypes.columns.difference(['age','sex','cohort'])
-#binary_continuous_traits
+binary_continuous_traits=phenotypes.columns.difference(['age','sex','cohort','diabetes'])
+print(len(binary_continuous_traits))
 
 if 'ipykernel' in sys.argv[0]:
     ipykernel=True
-    phenotype_name='FEV_over_FVC_predicted'
+    phenotype_name='allergic_disease'
     step_idx=1
     mode_list=[0]
     #phenotype_name='height'
@@ -90,14 +100,20 @@ if phenotype_name.isdigit():
     phenotype_name=binary_continuous_traits[phenotype_name]      
 
 
-# In[45]:
+# In[142]:
+
+
+binary_continuous_traits.tolist().index('blood_in_urine'),binary_continuous_traits.tolist().index('t2_diabetes')
+
+
+# In[143]:
 
 
 data_out_assoc_phenotype_path=data_out_assoc_path+phenotype_name+'/'
 pathlib.Path(data_out_assoc_phenotype_path).mkdir(parents=True, exist_ok=True)
 
 
-# In[46]:
+# In[144]:
 
 
 #for i in binary_continuous_traits:
@@ -105,7 +121,7 @@ pathlib.Path(data_out_assoc_phenotype_path).mkdir(parents=True, exist_ok=True)
 #        print(i)
 
 
-# In[52]:
+# In[145]:
 
 
 pheno=pd.read_csv(data_out_pheno_path+phenotype_name+'.phe',sep='\t',names=['FID','IID','pheno'])
@@ -113,7 +129,7 @@ phenotype_type='binary' if len(pheno['pheno'][pheno['pheno']!=-9].value_counts()
 phenotype_type
 
 
-# In[17]:
+# In[146]:
 
 
 log = logging.getLogger('logger')
@@ -132,7 +148,7 @@ log.addHandler(fileHandler)
 log.addHandler(streamHandler)
 
 
-# In[18]:
+# In[147]:
 
 
 for step_idx_sub in range(1,step_idx):
@@ -141,25 +157,25 @@ for step_idx_sub in range(1,step_idx):
         sys.exit()
 
 
-# In[19]:
+# In[148]:
 
 
 log.info_head=lambda x: log.info('-'*int((100-len(x))/2)+x+'-'*int((100-len(x))/2))
 
 
-# In[20]:
+# In[149]:
 
 
 log.info_head("phenotype_name: {}, phenotype_type:{} , Step : {} ".format(phenotype_name,phenotype_type,step_idx))
 
 
-# In[21]:
+# In[150]:
 
 
 #os.path.exists(data_out_assoc_phenotype_path+'step_{:02d}.cond.stop'.format(step_idx))
 
 
-# In[22]:
+# In[151]:
 
 
 for step_idx_sub in range(1,step_idx+1):
@@ -169,45 +185,50 @@ for step_idx_sub in range(1,step_idx+1):
         sys.exit()
 
 
-# In[48]:
+# In[152]:
 
 
 #gene_bed['name2'][gene_bed['name2'].str.contains('HLA')]
 
 
-# In[49]:
+# In[153]:
 
 
 #gene_assign.shape
 
 
-# In[50]:
+# In[154]:
 
 
-gene_bed_path='data/known_genes_chr6.hg19.txt'
+gene_bed_path='data/mart_export.txt'
 gene_bed=pd.read_csv(gene_bed_path,sep='\t')
-gene_bed=gene_bed[(gene_bed['txStart']>=plink_KCHIP_HLA_AA_SNP_1000G_bim.pos.min())&(gene_bed['txEnd']<=plink_KCHIP_HLA_AA_SNP_1000G_bim.pos.max())]
-gene_bed=gene_bed[~gene_bed.duplicated(['name2'])]
+gene_bed=gene_bed.drop(columns='Exon stable ID')
+gene_bed=gene_bed[(gene_bed['Gene start (bp)']>=plink_KCHIP_HLA_AA_SNP_1000G_bim.pos.min())&(gene_bed['Gene end (bp)']<=plink_KCHIP_HLA_AA_SNP_1000G_bim.pos.max())]
+gene_bed=gene_bed[(gene_bed['Transcript type']=='protein_coding')]
+gene_bed=gene_bed[~gene_bed.duplicated(['Gene name','Gene start (bp)','Gene end (bp)'])]
+print(gene_bed.shape)
+gene_bed=gene_bed[~gene_bed.duplicated(['Gene name'])]
+print(gene_bed.shape)
 
 gene_assign=plink_KCHIP_HLA_AA_SNP_1000G_bim[['pos']]
 
 for idx,row in gene_bed.iterrows():
-    gene_assign[row['name2']]=0
+    gene_assign[row['Gene name']]=0
     
 for idx,row in gene_bed.iterrows():    
-    gene_assign[row['name2']][(gene_assign['pos']>=row['txStart'])&(gene_assign['pos']<=row['txEnd'])]=1
+    gene_assign[row['Gene name']][(gene_assign['pos']>=row['Gene start (bp)'])&(gene_assign['pos']<=row['Gene end (bp)'])]=1
 
 gene_assign.columns=gene_assign.columns.str.replace('HLA-','HLA_')        
     
 HLA_names=np.unique([i[0].split('_')[1] for i in plink_KCHIP_HLA_AA_SNP_1000G_bim[plink_KCHIP_HLA_AA_SNP_1000G_bim.index.str.contains('HLA_')].index.str.split('*')])
 
 for HLA_name in HLA_names:
-    HLA_name='HLA_{}'.format(HLA_name)
     gene_select=gene_assign[gene_assign.index.str.contains('HLA_'+HLA_name)|gene_assign.index.str.contains('SNPS_'+HLA_name)|gene_assign.index.str.contains('AA_'+HLA_name)]#print(gene_select.sort_values('pos').iloc[0],gene_select.sort_values('pos').iloc[-1])
+    HLA_name='HLA_{}'.format(HLA_name)
     gene_assign[HLA_name][(gene_assign['pos']>=gene_select['pos'].min())&(gene_assign['pos']<=gene_select['pos'].max())]=1 
 
 
-# In[53]:
+# In[155]:
 
 
 covariate_df=pd.read_csv(PC_path,sep='\t').set_index('ID').loc[plink_KCHIP_HLA_AA_SNP_1000G_fam['IID']]
@@ -232,18 +253,12 @@ else:
 plink_KCHIP_HLA_AA_SNP_1000G_fam.iloc[:,:2].merge(right=covariate_df,left_on='IID',right_index=True).fillna(-9).to_csv(data_out_assoc_phenotype_path+'covar',index=None,sep='\t')
 
 
-# In[39]:
-
-
-#phenotypes.index[phenotypes['cohort']==1]
-
-
 # In[40]:
 
 
 if 0 in mode_list:
     if os.path.exists(data_out_assoc_phenotype_path+'step_{:02d}.cond'.format(step_idx)):
-        log.warning("Tried to construct .cond but. cond already exists")
+        log.warning("Tried to construct .cond but .cond already exists")
     else:
         if step_idx==1:
             conditional_list=[]
@@ -252,16 +267,28 @@ if 0 in mode_list:
             conditional_list=[]
             for step_idx_sub in range(1,step_idx):
                 log.info("step idx sub {} cond finding".format(step_idx_sub))
+                
+                
                 GAT_result=pd.read_csv(data_out_assoc_phenotype_path+'step_{:02d}.GAT.result.tsv'.format(step_idx_sub),sep='\t')
                 plink_result=pd.read_csv(data_out_assoc_phenotype_path+'step_{:02d}.plink.PHENO2.glm.{}'.format(step_idx_sub,'logistic' if phenotype_type=='binary' else 'linear'),sep='\t')
 
-                plink_result_munge=plink_result[plink_result['TEST']=='ADD'].drop(columns='#CHROM').rename(columns={'TEST':'term','ID':'marker_name','BETA':'coef','SE':'std','T_STAT':'Z','Z_STAT':'Z','OBS_CT':'nobs'})
+                GAT_result=GAT_result[(~GAT_result['marker_name'].str.contains('HLA',regex=False))|(GAT_result['marker_name'].str.contains('*',regex=False))]
+                if step_idx_sub>1:
+                    conditional_list_used=pd.read_csv(data_out_assoc_phenotype_path+'step_{:02d}.cond'.format(step_idx_sub),sep='\t',header=None)[0].values.tolist()
+                    for condition in conditional_list_used:
+                        if condition[:4]=='HLA_':
+                            GAT_result.loc[GAT_result['marker_name'].str.contains('AA_'+condition.split('_')[1]+'_',regex=False), ['P', 'coef', 'std', 'Z', 'chisq', 'df']]=np.nan
+
+                plink_result_munge=plink_result[plink_result['TEST']=='ADD'].drop(columns='#CHROM').rename(columns={'TEST':'term','ID':'marker_name','BETA':'coef','SE':'std','LOG(OR)_SE':'std','T_STAT':'Z','Z_STAT':'Z','OBS_CT':'nobs'})
+                if 'OR' in plink_result_munge.columns:
+                    plink_result_munge['coef']=np.log(plink_result_munge['OR'])
+
                 plink_result_munge['A2']=plink_result_munge.apply(lambda x: x['ALT'] if x['A1']==x['REF'] else x['REF'],axis=1)
                 plink_result_munge=plink_result_munge.drop(columns=['REF','ALT'])
                 plink_result_munge['note']='unphased bialleic'  
                 result_merge=pd.concat([GAT_result,plink_result_munge],sort=True)[['marker_name','note','term','POS','Z','coef','std','chisq','df','A1','A2','multi_allele','nobs','P']]
-            
-                result_merge_sorted=result_merge.astype({'P':float}).sort_values('P')   
+
+                result_merge_sorted=result_merge.astype({'P':float}).sort_values('P')                  
 
                 result_merge.to_csv(data_out_assoc_phenotype_path+'step_{:02d}.result.tsv'.format(step_idx_sub),index=None,sep='\t',header=True)                                        
                 result_merge_sorted.to_csv(data_out_assoc_phenotype_path+'step_{:02d}.result_sorted.tsv'.format(step_idx_sub),index=None,sep='\t',header=True)                                        
@@ -327,7 +354,7 @@ if 1 in mode_list:
         log.info("######################################### step {:02d} Phased Association  #########################################".format(step_idx))
 
 
-        command='python Generic_Association_Tool/GAT.py         --assoc {assoc_mode}         --out {out}         --bfile {bfile}         --bgl-phased {bgl_phased}         --pheno {pheno}         --covar {covar}         --condition-list {cond}         --skip "(?P<name>6:[0-9]*_[A-Z]*/[\<\>A-Z\:0-9]*),(?P<name>AX\-[0-9]*),(?P<name>AFFX\-SP\-[0-9]*),(?P<name>SNPS_.*),(?P<name>INS_SNPS_.*)"         --multialleic "(?P<name>HLA_[0-9A-Z]*)\*(?P<allele>[0-9:]*)"         --multialleic-always "(?P<name>AA_[A-Z0-9]*_[\-0-9]*_[0-9]*_exon[0-9]*)_*(?P<allele>[A-Z]*)"'.format(
+        command='python Generic_Association_Tool/GAT.py         --assoc {assoc_mode}         --out {out}         --bfile {bfile}         --bgl-phased {bgl_phased}         --pheno {pheno}         --covar {covar}         --condition-list {cond}         --skip "(?P<name>6:[0-9]*_[A-Z]*/[\<\>A-Z\:0-9]*),(?P<name>AX\-[0-9]*),(?P<name>AFFX\-SP\-[0-9]*),(?P<name>SNPS_.*),(?P<name>INS_SNPS_.*)"         --multiallelic "(?P<name>HLA_[0-9A-Z]*)\*(?P<allele>[0-9:]*),(?P<name>AA_[A-Z0-9]*_[\-0-9]*_[0-9]*_exon[0-9]*)_*(?P<allele>[A-Z]*)"'.format(
         assoc_mode='logistic' if phenotype_type=='binary' else 'linear',
         out=data_out_assoc_phenotype_path+'step_{:02d}.GAT'.format(step_idx),
         bfile=plink_1000G_path,
@@ -367,117 +394,3 @@ if 2 in mode_list:
         log.info(stdout)
         log.error(stderr)  
 
-
-# # Deprecated
-
-# for i in range(0,101):
-#     phenotype_name=binary_continuous_traits[i]      
-#     pheno=pd.read_csv(data_out_pheno_path+phenotype_name+'.phe',sep='\t',names=['FID','IID','pheno'])
-#     
-#     if len(pheno['pheno'].unique())<4:
-#         continue
-#     pheno['pheno'][pheno['pheno']!=-9].hist(bins=50)
-#     print(phenotype_name)
-#     plt.show()
-# 
-
-# r2_list=[]
-# for idx_bim,(SNP,row) in enumerate(plink_KCHIP_HLA_AA_SNP_1000G_bim.iterrows()):
-#     r2=pearsonr(plink_KCHIP_HLA_AA_SNP_1000G.get_geno_marker('6:30165273_C/T'),plink_KCHIP_HLA_AA_SNP_1000G.get_geno_marker(SNP))[0]**2
-#     r2_list.append(r2)
-# r2_df=pd.DataFrame(r2_list,index=plink_KCHIP_HLA_AA_SNP_1000G_bim.index)  
-
-# r2_df.sort_values(0)
-
-# #pheno['pheno']
-
-# #pheno['pheno'].loc[phenotypes.index[phenotypes['cohort']==1]].value_counts()
-
-# pheno.set_index('IID').loc[phenotypes.index[phenotypes['cohort']==1]]['pheno'].value_counts()
-
-# #pheno.set_index('IID').loc[phenotypes.index[phenotypes['cohort']==2]]['pheno'].value_counts()
-
-# pheno.set_index('IID').loc[phenotypes.index[phenotypes['cohort']==3]]['pheno'].value_counts()
-
-# """
-# #r2_df.loc[gene_assign.index[gene_assign['HLA_DPB1']==1]].sort_values(0)
-# r2_list=[]
-# for idx_bim,(SNP,row) in enumerate(plink_KCHIP_HLA_AA_SNP_1000G_bim.iterrows()):
-#     r2=pearsonr(plink_KCHIP_HLA_AA_SNP_1000G.get_geno_marker('6:31367865_G/A'),plink_KCHIP_HLA_AA_SNP_1000G.get_geno_marker(SNP))[0]**2
-#     r2_list.append(r2)
-# r2_df=pd.DataFrame(r2_list,index=plink_KCHIP_HLA_AA_SNP_1000G_bim.index)  
-# #r2_df.loc['6:32665115_T/C']
-# 
-# r2_df.loc[gene_assign.index[gene_assign['HLA_B']==1]].sort_values(0)
-# """
-# 
-
-# #pheno['pheno'].loc[pheno['pheno']!=-9]
-# #covariate_df['age']
-# #pheno['pheno']
-
-# plt.scatter(covariate_df['age'].loc[pheno.set_index('IID')['pheno']!=-9],pheno.set_index('IID')['pheno'].loc[pheno.set_index('IID')['pheno']!=-9])
-
-# pheno
-
-# #phenotypes['cohort']==2
-
-# (plink_KCHIP_HLA_AA_SNP_1000G.get_geno_marker(marker_name1)==0)[phenotypes['cohort']==2].sum(),(plink_KCHIP_HLA_AA_SNP_1000G.get_geno_marker(marker_name1)==1)[phenotypes['cohort']==2].sum(),(plink_KCHIP_HLA_AA_SNP_1000G.get_geno_marker(marker_name1)==2)[phenotypes['cohort']==2].sum()
-
-# marker_name1='6:30165273_C/T'
-# (plink_KCHIP_HLA_AA_SNP_1000G.get_geno_marker(marker_name1)==0).sum(),(plink_KCHIP_HLA_AA_SNP_1000G.get_geno_marker(marker_name1)==1).sum(),(plink_KCHIP_HLA_AA_SNP_1000G.get_geno_marker(marker_name1)==2).sum()
-
-# ((plink_KCHIP_HLA_AA_SNP_1000G.get_geno_marker(marker_name1)==1).sum()+2*(plink_KCHIP_HLA_AA_SNP_1000G.get_geno_marker(marker_name1)==2).sum())/\
-# (2*len(((plink_KCHIP_HLA_AA_SNP_1000G.get_geno_marker(marker_name1)))))
-
-# marker_name1='rs2523942'
-# (plink_KCHIP_HLA_AA_SNP_1000G.get_geno_marker(marker_name1)==0).sum(),(plink_KCHIP_HLA_AA_SNP_1000G.get_geno_marker(marker_name1)==1).sum(),(plink_KCHIP_HLA_AA_SNP_1000G.get_geno_marker(marker_name1)==2).sum()
-
-# ((plink_KCHIP_HLA_AA_SNP_1000G.get_geno_marker(marker_name1)==1).sum()+2*(plink_KCHIP_HLA_AA_SNP_1000G.get_geno_marker(marker_name1)==2).sum())/\
-# (2*len(((plink_KCHIP_HLA_AA_SNP_1000G.get_geno_marker(marker_name1)))))
-
-# 
-
-# marker_name1='6:29925086_T/G'
-# (plink_KCHIP_HLA_AA_SNP_1000G.get_geno_marker(marker_name1)==0).sum(),(plink_KCHIP_HLA_AA_SNP_1000G.get_geno_marker(marker_name1)==1).sum(),(plink_KCHIP_HLA_AA_SNP_1000G.get_geno_marker(marker_name1)==2).sum()
-
-# ((plink_KCHIP_HLA_AA_SNP_1000G.get_geno_marker(marker_name1)==1).sum()+2*(plink_KCHIP_HLA_AA_SNP_1000G.get_geno_marker(marker_name1)==2).sum())/\
-# (2*len(((plink_KCHIP_HLA_AA_SNP_1000G.get_geno_marker(marker_name1)))))
-
-# (plink_KCHIP_HLA_AA_SNP_1000G.get_geno_marker('6:30165273_C/T')==-1).sum()
-
-# 2*np.sqrt(4036)*np.sqrt(86072)
-
-# phenotypes['cohort']==1
-
-# pheno['pheno'][pheno['pheno']>0].mean(),pheno['pheno'][pheno['pheno']>0].std()
-
-# 
-# marker_name1='6:30165273_C/T'
-# marker_name2='6:30167835_C/T'
-
-# pearsonr(plink_KCHIP_HLA_AA_SNP_1000G.get_geno_marker(marker_name1),plink_KCHIP_HLA_AA_SNP_1000G.get_geno_marker(marker_name2))
-
-# ((plink_KCHIP_HLA_AA_SNP_1000G.get_geno_marker(marker_name1)==2)&(plink_KCHIP_HLA_AA_SNP_1000G.get_geno_marker(marker_name2)==2)).sum()
-
-# pheno['pheno'][plink_KCHIP_HLA_AA_SNP_1000G.get_geno_marker(marker_name2)==0].replace(-9,np.nan).mean(),pheno['pheno'][plink_KCHIP_HLA_AA_SNP_1000G.get_geno_marker(marker_name2)==0].replace(-9,np.nan).hist(bins=50)
-# 
-
-# pheno['pheno'][plink_KCHIP_HLA_AA_SNP_1000G.get_geno_marker(marker_name2)==1].replace(-9,np.nan).mean(),pheno['pheno'][plink_KCHIP_HLA_AA_SNP_1000G.get_geno_marker(marker_name2)==1].replace(-9,np.nan).hist(bins=50)
-
-# pheno['pheno'][plink_KCHIP_HLA_AA_SNP_1000G.get_geno_marker(marker_name2)==2].replace(-9,np.nan).mean(),pheno['pheno'][plink_KCHIP_HLA_AA_SNP_1000G.get_geno_marker(marker_name2)==2].replace(-9,np.nan).hist(bins=50)
-# 
-
-# pheno['pheno'].replace(-9,np.nan).hist(bins=50)
-
-# pheno['pheno'][plink_KCHIP_HLA_AA_SNP_1000G.get_geno_marker(marker_name1)==0].replace(-9,np.nan).mean(),pheno['pheno'][plink_KCHIP_HLA_AA_SNP_1000G.get_geno_marker(marker_name1)==0].replace(-9,np.nan).hist(bins=50)
-
-# pheno['pheno'][plink_KCHIP_HLA_AA_SNP_1000G.get_geno_marker(marker_name1)==1].replace(-9,np.nan).mean(),pheno['pheno'][plink_KCHIP_HLA_AA_SNP_1000G.get_geno_marker(marker_name1)==1].replace(-9,np.nan).hist(bins=50)
-
-# pheno['pheno'][plink_KCHIP_HLA_AA_SNP_1000G.get_geno_marker(marker_name1)==2].replace(-9,np.nan).mean(),pheno['pheno'][plink_KCHIP_HLA_AA_SNP_1000G.get_geno_marker(marker_name1)==2].replace(-9,np.nan).hist(bins=50)
-# 
-# 
-
-# phenotype_raw_CT=pd.read_csv(phenotype_raw_CT_path,sep='\t',index_col='ID')
-
-# #phenotype_raw_CT['CT1_ALP'][(phenotype_raw_CT['CT1_ALP']!=66666)&(phenotype_raw_CT['CT1_ALP']!=99999)&(phenotype_raw_CT['CT1_ALP']<5000)].hist(bins=100)
