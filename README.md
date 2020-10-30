@@ -30,19 +30,19 @@ Using this new single-population dataset, we wanted to confirm already reported 
 
 # Software
 
-## Genotype munge
-- [Vcftools](http://vcftools.sourceforge.net/)
-- [Plink](www.cog-genomics.org/plink/2.0/)
+- For genotype munge,
+    - [Vcftools](http://vcftools.sourceforge.net/)
+    - [Plink](www.cog-genomics.org/plink/2.0/)
 
-## HLA Imputation
-- [CookHLA](https://github.com/WansonChoi/CookHLA)
+- For HLA Imputation,
+    - [CookHLA](https://github.com/WansonChoi/CookHLA)
 
-## Association test
-- [GAT (Generic Genome-Wide Association Tool)](https://github.com/ch6845/GAT)
+- For HLA variant association test,
+    - [GAT (Generic Genome-Wide Association Tool)](https://github.com/ch6845/GAT)
 
 
-## HLA variant munge
-- [HATK(HLA Analysis Toolkit)](https://github.com/WansonChoi/HATK)
+- For HLA variant munge,
+    - [HATK(HLA Analysis Toolkit)](https://github.com/WansonChoi/HATK)
 
 # Citation
 
