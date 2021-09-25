@@ -160,25 +160,25 @@ log.info(i)
 
 
 
-# In[14]:
+# In[12]:
 
 
 #i=0
 
 
-# In[15]:
+# In[13]:
 
 
 #(pheno['pheno_x']!=-9).sum(),(pheno['pheno_y']!=-9).sum(),((pheno['pheno_x']!=-9) & (pheno['pheno_y']!=-9)).sum()
 
 
-# In[16]:
+# In[14]:
 
 
 #pd.read_csv(data_out_gcta_path+phenotype_name1+'-'+phenotype_name2+'.phe')
 
 
-# In[15]:
+# In[ ]:
 
 
 for j in range(i+1,len(binary_continuous_traits)):
@@ -198,8 +198,8 @@ for j in range(i+1,len(binary_continuous_traits)):
     pheno_filter.to_csv(data_out_gcta_path+phenotype_name1+'-'+phenotype_name2+'.phe',sep='\t',index=None,header=None)
 
     log.info("phenotype_name1: {}, phenotype_name2:{}".format(phenotype_name1,phenotype_name2))
-    log.info('pheno1 mising {}'.format((pheno['pheno_x']!=-9).sum()))
-    log.info('pheno2 mising {}'.format((pheno['pheno_y']!=-9).sum()))
+    log.info('pheno1 not missing {}'.format((pheno['pheno_x']!=-9).sum()))
+    log.info('pheno2 not missing {}'.format((pheno['pheno_y']!=-9).sum()))
 
     if os.path.exists(data_out_gcta_path+phenotype_name1+'-'+phenotype_name2+'.HEreg'):
         log.info(data_out_gcta_path+phenotype_name1+'-'+phenotype_name2+'.HEreg exists')
@@ -215,4 +215,22 @@ for j in range(i+1,len(binary_continuous_traits)):
     stdout,stderr=run_subprocess(command,dry=False)
     log.info(stdout)
     log.error(stderr)          
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
 
