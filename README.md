@@ -29,7 +29,7 @@ If you use any part of this code or our data, please cite our
 ```
 @article{kim2022phenome,
   title={Phenome-wide association study of the major histocompatibility complex region in the Korean population identifies novel association signals},
-  author={Kim, Chanwoo and Kim, Young Jin and Choi, Wanson and Jang, Hye-Mi and Hwang, Mi Yeong and Jung, Sunwoo and Lim, Hyunjoon and Hong, Sang Bin and Yoon, Kyungheon and Kim, Bong-Jo and others},
+  author={Kim, Chanwoo and Kim, Young Jin and Choi, Wanson and Jang, Hye-Mi and Hwang, Mi Yeong and Jung, Sunwoo and Lim, Hyunjoon and Hong, Sang Bin and Yoon, Kyungheon and Kim, Bong-Jo and Park, Hyun-Young and Han, Buhm},
   journal={Human molecular genetics},
   year={2022}
 }
